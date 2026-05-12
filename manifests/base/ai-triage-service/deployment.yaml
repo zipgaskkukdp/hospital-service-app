@@ -24,3 +24,4 @@ spec:
             name: ai-triage-service-config
         - secretRef:
             name: ai-triage-service-secret
+            

@@ -1,0 +1,35 @@
+# =========================
+# 1. Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# 2. Security & Keys
+# =========================
+*.pem
+*.key
+*.crt
+
+# =========================
+# 3. Infrastructure (Terraform)
+# =========================
+terraform.tfstate
+terraform.tfstate.*
+*.tfvars
+
+# =========================
+# 4. Kubernetes & AWS
+# =========================
+kubeconfig
+.aws/
+
+# =========================
+# 5. OS & IDE Defaults (추가 권장)
+# =========================
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+__pycache__/

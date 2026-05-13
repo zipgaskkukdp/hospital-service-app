@@ -35,7 +35,12 @@ export function SignupPage() {
         nickname: form.nickname,
         phone: form.phone
       });
-      navigate("/consultations/new");
+      navigate("/login", {
+        replace: true,
+        state: {
+          notice: "회원가입이 완료되었습니다. 이메일 인증 안내를 확인한 뒤 다시 로그인해 주세요."
+        }
+      });
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "회원가입에 실패했습니다.");
     } finally {

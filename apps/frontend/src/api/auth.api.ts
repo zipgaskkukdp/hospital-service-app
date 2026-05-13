@@ -28,7 +28,7 @@ export async function signup(input: {
     method: "POST",
     body: JSON.stringify(input)
   });
-  setAccessToken(payload.tokens.accessToken);
+  clearAccessToken();
   return payload;
 }
 

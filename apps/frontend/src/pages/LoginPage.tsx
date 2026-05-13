@@ -1,9 +1,11 @@
 import { FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login } from "../api/auth.api";
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const notice = (location.state as { notice?: string } | null)?.notice;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,6 +32,7 @@ export function LoginPage() {
           <h1 className="text-2xl font-bold text-slate-950">로그인</h1>
           <p className="mt-1 text-sm text-slate-500">Aicloud 계정으로 계속합니다.</p>
         </div>
+        {notice && <p className="rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-700">{notice}</p>}
         {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <label>
           <span className="label">Email</span>

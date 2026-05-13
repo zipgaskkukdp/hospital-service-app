@@ -355,7 +355,7 @@ variable "github_oidc_provider_arn" {
 variable "github_repository" {
   description = "GitHub repository in owner/name format."
   type        = string
-  default     = "baetin/ai_care"
+  default     = "zipgaskkukdp/hospital-service-app"
 }
 
 variable "github_branch" {

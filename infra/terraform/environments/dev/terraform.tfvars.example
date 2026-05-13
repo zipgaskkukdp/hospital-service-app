@@ -53,5 +53,5 @@ ai_processor_image_uri     = ""
 enable_cicd                = false
 create_github_oidc_provider = false
 github_oidc_provider_arn   = ""
-github_repository          = "baetin/ai_care"
+github_repository          = "zipgaskkukdp/hospital-service-app"
 github_branch              = "main"

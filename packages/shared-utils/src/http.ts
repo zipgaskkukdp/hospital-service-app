@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler, NextFunction, Request, RequestHandler, Response } from "express";
+import { ZodError } from "zod";
 
 export class HttpError extends Error {
   constructor(
@@ -32,15 +33,19 @@ export function notFoundHandler(): RequestHandler {
 
 export function errorHandler(serviceName: string): ErrorRequestHandler {
   return (err, _req, res, _next) => {
-    const statusCode = err instanceof HttpError ? err.statusCode : 500;
-    const message = err instanceof Error ? err.message : "Unexpected error";
+    const statusCode = err instanceof HttpError ? err.statusCode : err instanceof ZodError ? 400 : 500;
+    const message = err instanceof ZodError
+      ? "Invalid request"
+      : err instanceof Error
+        ? err.message
+        : "Unexpected error";
     if (statusCode >= 500) {
       console.error(`[${serviceName}]`, err);
     }
     res.status(statusCode).json({
       error: {
         message,
-        details: err instanceof HttpError ? err.details : undefined
+        details: err instanceof ZodError ? err.flatten() : err instanceof HttpError ? err.details : undefined
       }
     });
   };

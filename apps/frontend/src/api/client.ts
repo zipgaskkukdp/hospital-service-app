@@ -31,7 +31,13 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
-    const message = payload?.error?.message ?? `Request failed with ${response.status}`;
+    const fieldErrors = payload?.error?.details?.fieldErrors as Record<string, string[]> | undefined;
+    const firstFieldError = fieldErrors
+      ? Object.entries(fieldErrors).find(([, messages]) => messages.length > 0)
+      : undefined;
+    const message = firstFieldError
+      ? `${firstFieldError[0]}: ${firstFieldError[1][0]}`
+      : payload?.error?.message ?? `Request failed with ${response.status}`;
     throw new Error(message);
   }
 

@@ -22,8 +22,7 @@ export function getBearerToken(req: Request): string | null {
 
 export function signAccessToken(claims: JwtClaims, secret: string, expiresInSeconds: number): string {
   return jwt.sign(claims, secret, {
-    expiresIn: expiresInSeconds,
-    subject: claims.sub
+    expiresIn: expiresInSeconds
   });
 }
 

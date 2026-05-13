@@ -169,6 +169,11 @@ services:
       - "5173:5173"
     environment:
       VITE_API_BASE_URL: ""
+      AUTH_SERVICE_URL: http://auth-user-service:8081
+      QUESTIONNAIRE_SERVICE_URL: http://questionnaire-service:8082
+      BOARD_SERVICE_URL: http://board-service:8083
+      AI_TRIAGE_SERVICE_URL: http://ai-triage-service:8084
+      HOSPITAL_RECOMMENDATION_SERVICE_URL: http://hospital-recommendation-service:8085
     depends_on:
       - auth-user-service
       - questionnaire-service

@@ -13,6 +13,10 @@ export interface Consultation {
       symptom_keywords: string[];
       symptom_summary: string;
     };
+    ai_process?: {
+      prompt_version: string;
+      requested_at: string;
+    };
   };
   aiResultId: string | null;
   createdAt: string;

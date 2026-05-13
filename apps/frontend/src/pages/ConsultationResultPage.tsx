@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AiResult, ConsultationAsset, getAiResult, mockProcess } from "../api/ai.api";
+import { Consultation, getConsultation } from "../api/consultation.api";
+import { formatDateTime } from "../utils/date";
 
 export function ConsultationResultPage() {
   const { id } = useParams();
+  const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [result, setResult] = useState<AiResult | null>(null);
   const [assets, setAssets] = useState<ConsultationAsset[]>([]);
   const [status, setStatus] = useState("PENDING");
@@ -13,7 +16,11 @@ export function ConsultationResultPage() {
     if (!id) {
       return;
     }
-    const payload = await getAiResult(id);
+    const [nextConsultation, payload] = await Promise.all([
+      getConsultation(id),
+      getAiResult(id)
+    ]);
+    setConsultation(nextConsultation);
     setResult(payload.result);
     setAssets(payload.assets);
     setStatus(payload.status);
@@ -28,15 +35,21 @@ export function ConsultationResultPage() {
       return;
     }
     setLoading(true);
-    const payload = await mockProcess(id);
-    setResult(payload.result);
-    setAssets(payload.assets);
-    setStatus(payload.result.status);
-    setLoading(false);
+    try {
+      const payload = await mockProcess(id);
+      setResult(payload.result);
+      setAssets(payload.assets);
+      setStatus(payload.result.status);
+      setConsultation(await getConsultation(id));
+    } finally {
+      setLoading(false);
+    }
   }
 
   const pdfAsset = assets.find((asset) => asset.assetType === "PDF");
   const imageAsset = assets.find((asset) => asset.assetType === "IMAGE");
+  const latestAsset = assets[0];
+  const generatedAt = typeof result?.resultJson.generated_at === "string" ? result.resultJson.generated_at : null;
 
   return (
     <section className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
@@ -77,6 +90,24 @@ export function ConsultationResultPage() {
       </div>
       <aside className="panel space-y-4">
         <h2 className="text-lg font-bold">요약</h2>
+        <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-1">
+          <div className="bg-slate-50 p-3" style={{ borderRadius: 8 }}>
+            <dt className="text-slate-500">문진 작성</dt>
+            <dd className="mt-1 font-semibold">{formatDateTime(consultation?.createdAt)}</dd>
+          </div>
+          <div className="bg-slate-50 p-3" style={{ borderRadius: 8 }}>
+            <dt className="text-slate-500">문진 수정</dt>
+            <dd className="mt-1 font-semibold">{formatDateTime(consultation?.updatedAt)}</dd>
+          </div>
+          <div className="bg-slate-50 p-3" style={{ borderRadius: 8 }}>
+            <dt className="text-slate-500">결과 저장</dt>
+            <dd className="mt-1 font-semibold">{formatDateTime(result?.createdAt)}</dd>
+          </div>
+          <div className="bg-slate-50 p-3" style={{ borderRadius: 8 }}>
+            <dt className="text-slate-500">보고서 생성</dt>
+            <dd className="mt-1 font-semibold">{formatDateTime(generatedAt ?? latestAsset?.createdAt)}</dd>
+          </div>
+        </dl>
         <dl className="space-y-3 text-sm">
           <div>
             <dt className="text-slate-500">위험도</dt>

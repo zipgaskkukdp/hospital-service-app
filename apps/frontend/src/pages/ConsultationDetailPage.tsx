@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { completeConsultation, Consultation, getConsultation } from "../api/consultation.api";
+import { formatDateTime } from "../utils/date";
 
 export function ConsultationDetailPage() {
   const { id } = useParams();
@@ -39,6 +40,20 @@ export function ConsultationDetailPage() {
         <Link className="btn-secondary" to={`/consultations/${consultation.id}/result`}>
           결과 보기
         </Link>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="bg-slate-50 p-4" style={{ borderRadius: 8 }}>
+          <p className="text-sm text-slate-500">문진 작성</p>
+          <p className="font-semibold">{formatDateTime(consultation.createdAt)}</p>
+        </div>
+        <div className="bg-slate-50 p-4" style={{ borderRadius: 8 }}>
+          <p className="text-sm text-slate-500">최근 수정</p>
+          <p className="font-semibold">{formatDateTime(consultation.updatedAt)}</p>
+        </div>
+        <div className="bg-slate-50 p-4" style={{ borderRadius: 8 }}>
+          <p className="text-sm text-slate-500">분석 요청</p>
+          <p className="font-semibold">{formatDateTime(consultation.contentData.ai_process?.requested_at)}</p>
+        </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="bg-slate-50 p-4" style={{ borderRadius: 8 }}>

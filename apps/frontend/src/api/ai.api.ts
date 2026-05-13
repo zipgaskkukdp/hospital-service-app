@@ -9,6 +9,8 @@ export interface AiResult {
   departmentHint: string | null;
   recommendation: string | null;
   resultJson: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ConsultationAsset {
@@ -18,6 +20,7 @@ export interface ConsultationAsset {
   s3Key: string;
   publicUrl: string | null;
   cloudfrontUrl: string | null;
+  createdAt: string;
 }
 
 export async function getAiResult(consultationId: string): Promise<{ status: string; result: AiResult | null; assets: ConsultationAsset[] }> {

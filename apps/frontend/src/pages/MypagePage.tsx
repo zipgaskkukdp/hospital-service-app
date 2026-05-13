@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { changePassword, getMe, PublicUser, updateMe } from "../api/auth.api";
 import { Consultation, listConsultations } from "../api/consultation.api";
+import { formatDateTime } from "../utils/date";
 
 export function MypagePage() {
   const [user, setUser] = useState<PublicUser | null>(null);
@@ -68,7 +69,10 @@ export function MypagePage() {
                 <span className="font-semibold text-slate-900">{consultation.symptomSummary || "문진"}</span>
                 <span className="text-sm text-slate-500">{consultation.status}</span>
               </div>
-              <p className="mt-2 text-sm text-slate-500">{new Date(consultation.createdAt).toLocaleString()}</p>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
+                <span>작성 {formatDateTime(consultation.createdAt)}</span>
+                <span>수정 {formatDateTime(consultation.updatedAt)}</span>
+              </div>
             </Link>
           ))}
           {consultations.length === 0 && <p className="text-sm text-slate-500">표시할 진단표가 없습니다.</p>}

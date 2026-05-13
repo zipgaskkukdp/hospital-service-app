@@ -22,6 +22,16 @@ Required real values:
 `service_route_table_ids_to_onprem` can be left empty to discover route tables
 from `service_private_app_subnet_ids` at plan time.
 
+The dev example already includes these existing On-Prem values:
+
+- `existing_onprem_vpc_id = "vpc-0a53924e1ccaeb2e2"`
+- `existing_onprem_public_subnet_id = "subnet-04b1cf699c6c52520"`
+- `existing_onprem_private_subnet_id = "subnet-0652c89ea58554194"`
+
+The On-Prem route table IDs are intentionally blank for now. Fill
+`existing_onprem_public_route_table_id` and
+`existing_onprem_private_route_table_id` when the IDs are available.
+
 ## Commands
 
 ```bash

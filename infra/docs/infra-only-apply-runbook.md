@@ -22,6 +22,20 @@ questionnaire and hospital recommendation platform.
 - CloudWatch log groups
 - IAM roles and IRSA policy
 
+## Existing On-Prem Values in Dev
+
+- On-Prem VPC: `vpc-0a53924e1ccaeb2e2`
+- CIDR: `172.16.0.0/16`
+- Public subnet: `subnet-04b1cf699c6c52520`
+- Private subnet: `subnet-0652c89ea58554194`
+- Availability Zone: `ap-northeast-2a`
+- Route table IDs: not filled yet
+
+When the route table ID is available, set
+`existing_onprem_public_route_table_id` and
+`existing_onprem_private_route_table_id` in `tfvars.env.local`. If both subnets
+use the same route table, set the same value for both.
+
 ## C. Not Created by This Apply
 
 - Backend deployment

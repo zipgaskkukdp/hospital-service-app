@@ -14,6 +14,22 @@ and internet gateway were created in the AWS Console. Terraform references them
 through data sources in the `existing-network` module and does not recreate
 them.
 
+## Existing On-Prem Network
+
+The current dev example also references an already-created On-Prem VPC:
+
+- VPC: `vpc-0a53924e1ccaeb2e2`
+- CIDR: `172.16.0.0/16`
+- Public subnet: `subnet-04b1cf699c6c52520` in `ap-northeast-2a`
+- Private subnet: `subnet-0652c89ea58554194` in `ap-northeast-2a`
+- Route table IDs: to be filled later when provided
+
+Use `create_onprem_network=false` to keep referencing these existing resources.
+When route table IDs are provided, set
+`existing_onprem_public_route_table_id` and
+`existing_onprem_private_route_table_id`; if the same route table is associated
+to both subnets, use the same ID for both variables.
+
 ## Created by Terraform
 
 - On-Prem Role VPC, public/private subnets, IGW, and route tables when

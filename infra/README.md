@@ -22,13 +22,19 @@ The current dev example also references an already-created On-Prem VPC:
 - CIDR: `172.16.0.0/16`
 - Public subnet: `subnet-04b1cf699c6c52520` in `ap-northeast-2a`
 - Private subnet: `subnet-0652c89ea58554194` in `ap-northeast-2a`
-- Route table IDs: to be filled later when provided
+- On-Prem route table: `rtb-038788093fe3a6b25`
+- On-Prem IGW: `igw-02cc153ccd9981c3f`
 
 Use `create_onprem_network=false` to keep referencing these existing resources.
-When route table IDs are provided, set
-`existing_onprem_public_route_table_id` and
-`existing_onprem_private_route_table_id`; if the same route table is associated
-to both subnets, use the same ID for both variables.
+The public/private On-Prem subnets currently share the same route table ID.
+
+Known Service VPC route tables:
+
+- Public route table: `rtb-0cf3c0a0cb31950de`
+- Private app route table: `rtb-0b57d3c7408c20c8d`
+
+The infra-only VPN route uses the private app route table for
+`172.16.0.0/16 -> VGW`.
 
 ## Created by Terraform
 

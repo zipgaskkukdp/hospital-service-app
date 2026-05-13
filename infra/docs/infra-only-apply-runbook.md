@@ -29,12 +29,17 @@ questionnaire and hospital recommendation platform.
 - Public subnet: `subnet-04b1cf699c6c52520`
 - Private subnet: `subnet-0652c89ea58554194`
 - Availability Zone: `ap-northeast-2a`
-- Route table IDs: not filled yet
+- On-Prem route table: `rtb-038788093fe3a6b25`
+- On-Prem IGW: `igw-02cc153ccd9981c3f`
 
-When the route table ID is available, set
-`existing_onprem_public_route_table_id` and
-`existing_onprem_private_route_table_id` in `tfvars.env.local`. If both subnets
-use the same route table, set the same value for both.
+Known Service VPC route tables:
+
+- Public route table: `rtb-0cf3c0a0cb31950de`
+- Private app route table: `rtb-0b57d3c7408c20c8d`
+
+The infra-only VPN route uses `rtb-0b57d3c7408c20c8d` for
+`172.16.0.0/16 -> VGW`. The On-Prem public/private subnets currently share
+`rtb-038788093fe3a6b25`.
 
 ## C. Not Created by This Apply
 

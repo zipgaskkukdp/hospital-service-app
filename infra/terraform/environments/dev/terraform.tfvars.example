@@ -24,8 +24,10 @@ service_private_data_subnet_ids = [
   "subnet-0f38008ce44c44a11"
 ]
 
-# Leave empty to auto-discover route tables from the private app subnets.
-service_route_table_ids_to_onprem = []
+# Service private app route table that receives 172.16.0.0/16 -> VGW.
+service_route_table_ids_to_onprem = [
+  "rtb-0b57d3c7408c20c8d"
+]
 
 onprem_availability_zone = "ap-northeast-2a"
 create_onprem_network    = false
@@ -34,12 +36,9 @@ existing_onprem_vpc_id            = "vpc-0a53924e1ccaeb2e2"
 existing_onprem_public_subnet_id  = "subnet-04b1cf699c6c52520"
 existing_onprem_private_subnet_id = "subnet-0652c89ea58554194"
 
-# Optional. Leave empty to auto-discover route tables from the On-Prem subnets.
-# TODO: Fill these when the On-Prem route table ID is available.
-# If public/private subnets share one route table, use the same ID for both.
-existing_onprem_public_route_table_id  = ""
-existing_onprem_private_route_table_id = ""
-existing_onprem_internet_gateway_id    = ""
+existing_onprem_public_route_table_id  = "rtb-038788093fe3a6b25"
+existing_onprem_private_route_table_id = "rtb-038788093fe3a6b25"
+existing_onprem_internet_gateway_id    = "igw-02cc153ccd9981c3f"
 
 onprem_ec2_key_name = ""
 

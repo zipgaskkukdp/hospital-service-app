@@ -1,10 +1,15 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signup } from "../api/auth.api";
+import { Button } from "../components/Button";
+import { Card } from "../components/Card";
+import { Input } from "../components/Input";
+import { SiteFooter } from "../components/SiteFooter";
 
 export function SignupPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
+    userId: "",
     email: "",
     password: "",
     passwordConfirm: "",
@@ -49,46 +54,79 @@ export function SignupPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-8">
-      <form className="panel w-full max-w-xl space-y-4" onSubmit={onSubmit}>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-950">회원가입</h1>
-          <p className="mt-1 text-sm text-slate-500">이름과 연락처는 내부 민감정보 API로만 전달됩니다.</p>
-        </div>
-        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="sm:col-span-2">
-            <span className="label">Email</span>
-            <input className="input" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} required />
-          </label>
-          <label>
-            <span className="label">Password</span>
-            <input className="input" type="password" value={form.password} onChange={(event) => updateField("password", event.target.value)} required />
-          </label>
-          <label>
-            <span className="label">Password 확인</span>
-            <input className="input" type="password" value={form.passwordConfirm} onChange={(event) => updateField("passwordConfirm", event.target.value)} required />
-          </label>
-          <label>
-            <span className="label">Name</span>
-            <input className="input" value={form.name} onChange={(event) => updateField("name", event.target.value)} required />
-          </label>
-          <label>
-            <span className="label">Nickname</span>
-            <input className="input" value={form.nickname} onChange={(event) => updateField("nickname", event.target.value)} required />
-          </label>
-          <label className="sm:col-span-2">
-            <span className="label">Phone</span>
-            <input className="input" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} required />
-          </label>
-        </div>
-        <button className="btn w-full" type="submit" disabled={loading}>
-          회원가입
-        </button>
-        <p className="text-center text-sm text-slate-600">
-          이미 계정이 있나요? <Link className="font-semibold text-aicloudBlue" to="/login">로그인</Link>
-        </p>
-      </form>
-    </main>
+    <div className="flex min-h-screen flex-col bg-[#F6FAFE] text-slate-950">
+      <main className="flex flex-1 items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-[620px] p-8 shadow-[0_10px_30px_rgba(15,23,42,0.06)] sm:p-10">
+          <div className="mb-8 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-[#2563EB]">
+              <span className="material-symbols-outlined text-[30px]">health_and_safety</span>
+            </div>
+            <h1 className="mt-5 text-3xl font-bold">회원가입</h1>
+            <p className="mt-3 text-base text-slate-600">Aicloud와 함께 스마트한 진료를 시작하세요.</p>
+          </div>
+          <form className="space-y-5" onSubmit={onSubmit}>
+            {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+            <Input
+              label="아이디"
+              onChange={(event) => updateField("userId", event.target.value)}
+              placeholder="아이디를 입력해주세요"
+              value={form.userId}
+            />
+            <Input
+              autoComplete="email"
+              label="이메일"
+              onChange={(event) => updateField("email", event.target.value)}
+              placeholder="example@aicloud.com"
+              required
+              type="email"
+              value={form.email}
+            />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Input
+                autoComplete="new-password"
+                label="비밀번호"
+                onChange={(event) => updateField("password", event.target.value)}
+                placeholder="8자 이상 영문, 숫자 조합"
+                required
+                type="password"
+                value={form.password}
+              />
+              <Input
+                autoComplete="new-password"
+                label="비밀번호 확인"
+                onChange={(event) => updateField("passwordConfirm", event.target.value)}
+                placeholder="비밀번호 재입력"
+                required
+                type="password"
+                value={form.passwordConfirm}
+              />
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Input label="이름" onChange={(event) => updateField("name", event.target.value)} placeholder="실명 입력" required value={form.name} />
+              <Input label="닉네임" onChange={(event) => updateField("nickname", event.target.value)} placeholder="사용할 닉네임" required value={form.nickname} />
+            </div>
+            <Input
+              autoComplete="tel"
+              label="휴대폰 번호"
+              onChange={(event) => updateField("phone", event.target.value)}
+              placeholder="'-' 없이 숫자만 입력"
+              required
+              type="tel"
+              value={form.phone}
+            />
+            <Button className="h-14 text-base" disabled={loading} fullWidth type="submit">
+              {loading ? "가입 중" : "가입하기"}
+            </Button>
+          </form>
+          <p className="mt-8 text-center text-base text-slate-600">
+            이미 계정이 있으신가요?{" "}
+            <Link className="font-semibold text-[#2563EB] hover:underline" to="/login">
+              로그인
+            </Link>
+          </p>
+        </Card>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

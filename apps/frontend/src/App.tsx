@@ -6,10 +6,13 @@ import { BoardListPage } from "./pages/BoardListPage";
 import { ConsultationDetailPage } from "./pages/ConsultationDetailPage";
 import { ConsultationNewPage } from "./pages/ConsultationNewPage";
 import { ConsultationResultPage } from "./pages/ConsultationResultPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { HospitalRecommendPage } from "./pages/HospitalRecommendPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MypagePage } from "./pages/MypagePage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { SignupPage } from "./pages/SignupPage";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 
 function RequireAuth() {
   return getAccessToken() ? <Outlet /> : <Navigate to="/login" replace />;
@@ -21,6 +24,9 @@ export function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
           <Route path="/mypage" element={<MypagePage />} />

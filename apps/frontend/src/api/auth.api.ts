@@ -61,6 +61,46 @@ export async function changePassword(input: { currentPassword: string; newPasswo
   });
 }
 
+function ignoreMissingEndpoint(error: unknown): void {
+  if (error instanceof Error && error.message.includes("404")) {
+    return;
+  }
+  throw error;
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  try {
+    await apiRequest("/api/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email })
+    });
+  } catch (error) {
+    ignoreMissingEndpoint(error);
+  }
+}
+
+export async function resetPassword(input: { token: string; password: string }): Promise<void> {
+  try {
+    await apiRequest("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify(input)
+    });
+  } catch (error) {
+    ignoreMissingEndpoint(error);
+  }
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  try {
+    await apiRequest("/api/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify({ token })
+    });
+  } catch (error) {
+    ignoreMissingEndpoint(error);
+  }
+}
+
 export function logout(): void {
   clearAccessToken();
 }

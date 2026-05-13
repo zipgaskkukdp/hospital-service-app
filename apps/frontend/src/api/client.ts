@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 const TOKEN_KEY = "aicloud.accessToken";
 const FIELD_LABELS: Record<string, string> = {
@@ -29,8 +31,25 @@ export function clearAccessToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+const apiClient = axios.create({
+  baseURL: API_BASE_URL || undefined,
+  withCredentials: true
+});
+
 function toUserMessage(message: string): string {
   return API_MESSAGES[message] ?? VALIDATION_MESSAGES[message] ?? message;
+}
+
+function bodyToData(body: RequestInit["body"]) {
+  if (typeof body !== "string") {
+    return body;
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch {
+    return body;
+  }
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -44,26 +63,24 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     headers.set("authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers
-  });
-
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
+  try {
+    const response = await apiClient.request<T>({
+      data: bodyToData(options.body),
+      headers: Object.fromEntries(headers.entries()),
+      method: options.method ?? "GET",
+      url: path
+    });
+    return response.data ?? (undefined as T);
+  } catch (error) {
+    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+    const payload = axios.isAxiosError(error) ? error.response?.data : null;
     const fieldErrors = payload?.error?.details?.fieldErrors as Record<string, string[]> | undefined;
     const firstFieldError = fieldErrors
       ? Object.entries(fieldErrors).find(([, messages]) => messages.length > 0)
       : undefined;
     const message = firstFieldError
       ? `${FIELD_LABELS[firstFieldError[0]] ?? firstFieldError[0]}: ${toUserMessage(firstFieldError[1][0])}`
-      : toUserMessage(payload?.error?.message ?? `Request failed with ${response.status}`);
+      : toUserMessage(payload?.error?.message ?? `Request failed with ${status ?? "network error"}`);
     throw new Error(message);
   }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return response.json() as Promise<T>;
 }

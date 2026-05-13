@@ -147,6 +147,7 @@ app.post("/api/auth/signup", asyncHandler(async (req, res) => {
   const id = crypto.randomUUID();
   const onpremProfileId = await createSensitiveProfile(input, id);
   const passwordHash = await bcrypt.hash(input.password, 12);
+  let userInserted = false;
 
   try {
     const rows = await prisma.$queryRaw<UserRow[]>`
@@ -154,12 +155,17 @@ app.post("/api/auth/signup", asyncHandler(async (req, res) => {
       VALUES (${id}::uuid, ${input.email.toLowerCase()}, ${passwordHash}, ${input.nickname}, 'USER', ${onpremProfileId}::uuid)
       RETURNING *
     `;
+    userInserted = true;
     const user = rows[0];
     const tokens = await issueTokens(user);
     res.status(201).json({ user: toPublicUser(user), tokens });
   } catch (error) {
     if (String(error).includes("23505") || String(error).includes("Unique constraint")) {
       throw new HttpError(409, "Email already exists");
+    }
+    if (userInserted) {
+      await prisma.$executeRaw`DELETE FROM refresh_tokens WHERE user_id = ${id}::uuid`;
+      await prisma.$executeRaw`DELETE FROM users WHERE id = ${id}::uuid`;
     }
     throw error;
   }

@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String                      @id @db.Uuid
+  email           String                      @unique
+  passwordHash    String                      @map("password_hash")
+  nickname        String
+  role            String                      @default("USER")
+  onpremProfileId String?                     @map("onprem_profile_id") @db.Uuid
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
+  deletedAt       DateTime?                   @map("deleted_at")
+  logs            HospitalRecommendationLog[]
+
+  @@map("users")
+}
+
+model Consultation {
+  id             String                      @id @db.Uuid
+  userId         String                      @map("user_id") @db.Uuid
+  childRefId     String?                     @map("child_ref_id") @db.Uuid
+  status         String
+  contentData    Json                        @map("content_data")
+  symptomSummary String?                     @map("symptom_summary")
+  aiResultId     String?                     @map("ai_result_id") @db.Uuid
+  createdAt      DateTime                    @default(now()) @map("created_at")
+  updatedAt      DateTime                    @updatedAt @map("updated_at")
+  logs           HospitalRecommendationLog[]
+
+  @@map("consultations")
+}
+
+model HospitalRecommendationLog {
+  id             String        @id @db.Uuid
+  userId         String        @map("user_id") @db.Uuid
+  consultationId String?       @map("consultation_id") @db.Uuid
+  requestData    Json          @map("request_data")
+  resultData     Json          @map("result_data")
+  provider       String
+  createdAt      DateTime      @default(now()) @map("created_at")
+  user           User          @relation(fields: [userId], references: [id])
+  consultation   Consultation? @relation(fields: [consultationId], references: [id])
+
+  @@index([userId])
+  @@index([consultationId])
+  @@map("hospital_recommendation_logs")
+}

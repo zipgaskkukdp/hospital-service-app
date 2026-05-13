@@ -33,3 +33,11 @@ kubeconfig
 .vscode/
 node_modules/
 __pycache__/
+dist/
+build/
+coverage/
+.pytest_cache/
+*.pyc
+*.tsbuildinfo
+apps/frontend/vite.config.js
+apps/frontend/vite.config.d.ts

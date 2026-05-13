@@ -1,7 +1,15 @@
-# Node.js나 Python 등 실제 언어에 따라 나중에 변경될 수 있습니다. (임시 Node.js 세팅)
-FROM node:24-alpine
+FROM node:22-alpine
 
-WORKDIR /app
+WORKDIR /repo
 
-# 현재는 소스 코드가 없으므로, 실행 시 무한 대기하는 더미 컨테이너로 설정
-CMD ["tail", "-f", "/dev/null"]
+COPY package.json tsconfig.base.json ./
+COPY packages ./packages
+COPY apps/hospital-recommendation-service ./apps/hospital-recommendation-service
+
+RUN npm install --workspace @aicloud/hospital-recommendation-service --include-workspace-root
+RUN npm run build -w @aicloud/shared-types \
+  && npm run build -w @aicloud/shared-config \
+  && npm run build -w @aicloud/shared-utils \
+  && npm run build -w @aicloud/hospital-recommendation-service
+
+CMD ["npm", "run", "start", "-w", "@aicloud/hospital-recommendation-service"]

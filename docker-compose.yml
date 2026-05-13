@@ -1,78 +1,181 @@
-version: '3.8'
+x-node-env: &node-env
+  APP_ENV: dev
+  LOG_LEVEL: INFO
+  TZ: Asia/Seoul
+  CORS_ALLOWED_ORIGINS: http://localhost:5173
+  HEALTH_CHECK_PATH: /health
+  DATABASE_URL: postgresql://aicloud:%3CCHANGE_ME%3E@aws-rds-local:5432/aicloud?schema=public
+  JWT_SECRET: <CHANGE_ME>
+  AWS_REGION: ap-northeast-2
 
 services:
-  # 🗄️ 로컬 테스트용 통합 DB (실제 운영의 AWS RDS + On-Prem DB 역할 대체)
-  local-db:
+  aws-rds-local:
     image: postgres:15-alpine
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: hospital
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: aicloud
+      POSTGRES_USER: aicloud
+      POSTGRES_PASSWORD: <CHANGE_ME>
     volumes:
-      - local_pg_data:/var/lib/postgresql/data
+      - aws_rds_local_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aicloud -d aicloud"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
-  # 🛡️ 1. Auth & User Service
+  onprem-postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: aicloud_sensitive
+      POSTGRES_USER: aicloud
+      POSTGRES_PASSWORD: <CHANGE_ME>
+    volumes:
+      - onprem_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aicloud -d aicloud_sensitive"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   auth-user-service:
     build:
-      context: ./apps/auth-user-service
+      context: .
+      dockerfile: apps/auth-user-service/Dockerfile
     ports:
-      - "8081:8080" # 로컬 호스트의 8081 포트를 컨테이너의 8080으로 연결
-    env_file:
-      - .env
+      - "8081:8081"
+    environment:
+      <<: *node-env
+      SERVICE_NAME: auth-user-service
+      PORT: 8081
+      ONPREM_API_BASE_URL: http://onprem-sensitive-api:9000
+      ONPREM_API_TIMEOUT_MS: 3000
+      ONPREM_REQUIRED: "false"
     depends_on:
-      - local-db
+      aws-rds-local:
+        condition: service_healthy
+      onprem-sensitive-api:
+        condition: service_started
 
-  # 📝 2. Questionnaire Service
   questionnaire-service:
     build:
-      context: ./apps/questionnaire-service
+      context: .
+      dockerfile: apps/questionnaire-service/Dockerfile
     ports:
-      - "8082:8080"
-    env_file:
-      - .env
+      - "8082:8082"
+    environment:
+      <<: *node-env
+      SERVICE_NAME: questionnaire-service
+      PORT: 8082
+      ONPREM_API_BASE_URL: http://onprem-sensitive-api:9000
+      ONPREM_API_TIMEOUT_MS: 3000
+      ONPREM_REQUIRED: "false"
+      SQS_TRIAGE_QUEUE_URL: ""
+    depends_on:
+      aws-rds-local:
+        condition: service_healthy
+      onprem-sensitive-api:
+        condition: service_started
 
-  # 📋 3. Board Service
   board-service:
     build:
-      context: ./apps/board-service
+      context: .
+      dockerfile: apps/board-service/Dockerfile
     ports:
-      - "8083:8080"
-    env_file:
-      - .env
+      - "8083:8083"
+    environment:
+      <<: *node-env
+      SERVICE_NAME: board-service
+      PORT: 8083
+      S3_BUCKET_NAME: ""
+      S3_POST_IMAGE_PREFIX: board/posts/
+      S3_PRESIGNED_URL_EXPIRE_SECONDS: 300
+      CLOUDFRONT_DOMAIN: ""
     depends_on:
-      - local-db
+      aws-rds-local:
+        condition: service_healthy
 
-  # 🤖 4. AI Triage Service
   ai-triage-service:
     build:
-      context: ./apps/ai-triage-service
+      context: .
+      dockerfile: apps/ai-triage-service/Dockerfile
     ports:
-      - "8084:8080"
-    env_file:
-      - .env
+      - "8084:8084"
+    environment:
+      <<: *node-env
+      SERVICE_NAME: ai-triage-service
+      PORT: 8084
+      AI_PROVIDER: mock
+      AI_PROCESSING_MODE: inline_mock
+      BEDROCK_REGION: ap-northeast-2
+      BEDROCK_MODEL_ID: ""
+      BEDROCK_GUARDRAIL_ID: ""
+      BEDROCK_GUARDRAIL_VERSION: ""
+      S3_BUCKET_NAME: ""
+      S3_REPORT_PREFIX: reports/
+      S3_PRESIGNED_URL_EXPIRE_SECONDS: 300
+      CLOUDFRONT_DOMAIN: ""
+    depends_on:
+      aws-rds-local:
+        condition: service_healthy
 
-  # 🏥 5. Hospital Recommendation Service
   hospital-recommendation-service:
     build:
-      context: ./apps/hospital-recommendation-service
+      context: .
+      dockerfile: apps/hospital-recommendation-service/Dockerfile
     ports:
-      - "8085:8080"
-    env_file:
-      - .env
+      - "8085:8085"
+    environment:
+      <<: *node-env
+      SERVICE_NAME: hospital-recommendation-service
+      PORT: 8085
+      MAP_API_PROVIDER: mock
+      MAP_API_KEY: ""
+      MAP_API_BASE_URL: ""
+      MAP_API_TIMEOUT_MS: 3000
+    depends_on:
+      aws-rds-local:
+        condition: service_healthy
 
-  # 🔒 6. On-Prem Sensitive API (실제론 VPN 너머에 있지만 로컬에선 같이 띄움)
   onprem-sensitive-api:
     build:
-      context: ./apps/onprem-sensitive-api
+      context: .
+      dockerfile: apps/onprem-sensitive-api/Dockerfile
     ports:
-      - "8086:8080"
-    env_file:
-      - .env
+      - "9000:9000"
+    environment:
+      APP_ENV: dev
+      SERVICE_NAME: onprem-sensitive-api
+      PORT: 9000
+      LOG_LEVEL: INFO
+      TZ: Asia/Seoul
+      HEALTH_CHECK_PATH: /health
+      DB_HEALTH_CHECK_PATH: /db-health
+      DATABASE_URL: postgresql://aicloud:%3CCHANGE_ME%3E@onprem-postgres:5432/aicloud_sensitive
+      FIELD_ENCRYPTION_KEY: <CHANGE_ME>
+      ALLOWED_AWS_VPC_CIDR: 10.0.0.0/16
     depends_on:
-      - local-db
+      onprem-postgres:
+        condition: service_healthy
 
-# DB 데이터가 컨테이너 재시작 시 날아가지 않도록 볼륨 지정
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: ""
+    depends_on:
+      - auth-user-service
+      - questionnaire-service
+      - board-service
+      - ai-triage-service
+      - hospital-recommendation-service
+
 volumes:
-  local_pg_data:
+  aws_rds_local_data:
+  onprem_pg_data:

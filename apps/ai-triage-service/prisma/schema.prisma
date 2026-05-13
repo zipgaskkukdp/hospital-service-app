@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String         @id @db.Uuid
+  email           String         @unique
+  passwordHash    String         @map("password_hash")
+  nickname        String
+  role            String         @default("USER")
+  onpremProfileId String?        @map("onprem_profile_id") @db.Uuid
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  deletedAt       DateTime?      @map("deleted_at")
+  consultations   Consultation[]
+
+  @@map("users")
+}
+
+model Consultation {
+  id             String              @id @db.Uuid
+  userId         String              @map("user_id") @db.Uuid
+  childRefId     String?             @map("child_ref_id") @db.Uuid
+  status         String
+  contentData    Json                @map("content_data")
+  symptomSummary String?             @map("symptom_summary")
+  aiResultId     String?             @map("ai_result_id") @db.Uuid
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  user           User                @relation(fields: [userId], references: [id])
+  aiResults      AiResult[]
+  assets         ConsultationAsset[]
+
+  @@index([userId])
+  @@map("consultations")
+}
+
+model AiResult {
+  id             String       @id @db.Uuid
+  consultationId String       @map("consultation_id") @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  status         String
+  summary        String?
+  riskLevel      String       @map("risk_level")
+  departmentHint String?      @map("department_hint")
+  recommendation String?
+  resultJson     Json         @map("result_json")
+  modelProvider  String       @map("model_provider")
+  modelId        String?      @map("model_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+
+  @@index([consultationId])
+  @@index([userId])
+  @@map("ai_results")
+}
+
+model ConsultationAsset {
+  id             String       @id @db.Uuid
+  consultationId String       @map("consultation_id") @db.Uuid
+  assetType      String       @map("asset_type")
+  s3Key          String       @map("s3_key")
+  publicUrl      String?      @map("public_url")
+  cloudfrontUrl  String?      @map("cloudfront_url")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+
+  @@index([consultationId])
+  @@map("consultation_assets")
+}

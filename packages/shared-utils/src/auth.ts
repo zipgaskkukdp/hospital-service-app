@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { JwtClaims } from "@aicloud/shared-types";
 import { HttpError } from "./http.js";
 
@@ -27,10 +27,24 @@ export function signAccessToken(claims: JwtClaims, secret: string, expiresInSeco
 }
 
 export function signRefreshToken(userId: string, secret: string, expiresInSeconds: number): string {
-  return jwt.sign({ tokenType: "refresh" }, secret, {
-    expiresIn: expiresInSeconds,
-    subject: userId
+  return jwt.sign({ sub: userId, tokenType: "refresh" }, secret, {
+    expiresIn: expiresInSeconds
   });
+}
+
+function isAccessTokenPayload(decoded: string | JwtPayload): decoded is JwtClaims & JwtPayload {
+  if (!decoded || typeof decoded !== "object") {
+    return false;
+  }
+
+  const payload = decoded as Record<string, unknown>;
+  return (
+    typeof payload.sub === "string" &&
+    typeof payload.email === "string" &&
+    typeof payload.nickname === "string" &&
+    (payload.role === "USER" || payload.role === "ADMIN") &&
+    payload.tokenType === undefined
+  );
 }
 
 export function createAuthMiddleware(secretProvider: () => string): RequestHandler {
@@ -44,10 +58,16 @@ export function createAuthMiddleware(secretProvider: () => string): RequestHandl
       return next(new HttpError(401, "Authorization bearer token is required"));
     }
     try {
-      const decoded = jwt.verify(token, secret) as JwtClaims;
+      const decoded = jwt.verify(token, secret);
+      if (!isAccessTokenPayload(decoded)) {
+        throw new HttpError(401, "Invalid or expired token");
+      }
       req.user = decoded;
       next();
-    } catch {
+    } catch (error) {
+      if (error instanceof HttpError) {
+        return next(error);
+      }
       next(new HttpError(401, "Invalid or expired token"));
     }
   };
@@ -61,7 +81,8 @@ export function createOptionalAuthMiddleware(secretProvider: () => string): Requ
       return next();
     }
     try {
-      req.user = jwt.verify(token, secret) as JwtClaims;
+      const decoded = jwt.verify(token, secret);
+      req.user = isAccessTokenPayload(decoded) ? decoded : undefined;
     } catch {
       req.user = undefined;
     }

@@ -1,0 +1,57 @@
+# This file is an example.
+# Do not commit a real terraform.tfvars file.
+# Never put real secret values in Terraform variable files.
+# TF_VAR_ environment variables can also be used instead of terraform.tfvars.
+
+aws_region  = "ap-northeast-2"
+project_name = "ai-care"
+environment = "dev"
+
+service_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
+
+service_public_subnet_ids = [
+  "subnet-public-a",
+  "subnet-public-c"
+]
+
+service_private_app_subnet_ids = [
+  "subnet-private-app-a",
+  "subnet-private-app-c"
+]
+
+service_private_data_subnet_ids = [
+  "subnet-private-data-a",
+  "subnet-private-data-c"
+]
+
+service_route_table_ids_to_onprem = [
+  "rtb-private-app-a",
+  "rtb-private-app-c"
+]
+
+onprem_availability_zone = "ap-northeast-2a"
+onprem_ec2_key_name      = ""
+
+reports_bucket_name = "ai-care-dev-reports-<aws-account-id>"
+reports_s3_prefix   = "reports/"
+
+cluster_public_access_cidrs = [
+  "<your-public-ip>/32"
+]
+
+app_ecr_repository_names = [
+  "auth-user-service",
+  "questionnaire-service",
+  "ai-triage-service",
+  "hospital-recommendation-service",
+  "onprem-sensitive-api"
+]
+
+create_ai_processor_lambda = false
+ai_processor_image_uri     = ""
+
+enable_cicd                = false
+create_github_oidc_provider = false
+github_oidc_provider_arn   = ""
+github_repository          = "baetin/ai_care"
+github_branch              = "main"

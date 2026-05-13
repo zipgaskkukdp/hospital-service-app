@@ -45,13 +45,20 @@ module "existing_network" {
 module "onprem_network" {
   source = "../../modules/onprem-network"
 
-  project_name               = var.project_name
-  environment                = var.environment
-  onprem_vpc_cidr            = var.onprem_vpc_cidr
-  onprem_public_subnet_cidr  = var.onprem_public_subnet_cidr
-  onprem_private_subnet_cidr = var.onprem_private_subnet_cidr
-  onprem_availability_zone   = var.onprem_availability_zone
-  tags                       = local.common_tags
+  project_name                           = var.project_name
+  environment                            = var.environment
+  create_onprem_network                  = var.create_onprem_network
+  existing_onprem_vpc_id                 = var.existing_onprem_vpc_id
+  existing_onprem_public_subnet_id       = var.existing_onprem_public_subnet_id
+  existing_onprem_private_subnet_id      = var.existing_onprem_private_subnet_id
+  existing_onprem_public_route_table_id  = var.existing_onprem_public_route_table_id
+  existing_onprem_private_route_table_id = var.existing_onprem_private_route_table_id
+  existing_onprem_internet_gateway_id    = var.existing_onprem_internet_gateway_id
+  onprem_vpc_cidr                        = var.onprem_vpc_cidr
+  onprem_public_subnet_cidr              = var.onprem_public_subnet_cidr
+  onprem_private_subnet_cidr             = var.onprem_private_subnet_cidr
+  onprem_availability_zone               = var.onprem_availability_zone
+  tags                                   = local.common_tags
 }
 
 module "security" {

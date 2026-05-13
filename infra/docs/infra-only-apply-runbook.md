@@ -8,7 +8,8 @@ questionnaire and hospital recommendation platform.
 
 ## B. Created by This Apply
 
-- On-Prem Role VPC
+- On-Prem Role VPC when `create_onprem_network=true`; the current dev example
+  references the existing On-Prem VPC/subnets with `create_onprem_network=false`
 - Security groups
 - strongSwan, FastAPI placeholder, and On-Prem PostgreSQL placeholder EC2
 - AWS Site-to-Site VPN resources and routes
@@ -48,7 +49,8 @@ terraform apply tfplan
 ## E. Check in the Plan
 
 - Existing Service VPC, subnets, IGW, and route tables are not created.
-- On-Prem VPC is created.
+- On-Prem VPC is created only when `create_onprem_network=true`; with the
+  current dev example, existing On-Prem VPC/subnets are referenced instead.
 - NAT Gateway is not created.
 - ALB is not created.
 - Lambda function is not created when `create_ai_processor_lambda=false`.

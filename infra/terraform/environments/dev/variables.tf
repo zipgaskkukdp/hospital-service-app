@@ -43,8 +43,9 @@ variable "service_private_data_subnet_ids" {
 }
 
 variable "service_route_table_ids_to_onprem" {
-  description = "Existing Service VPC route table IDs that should route to On-Prem."
+  description = "Existing Service VPC route table IDs that should route to On-Prem. When empty, route tables are discovered from private app subnets."
   type        = list(string)
+  default     = []
 }
 
 variable "expected_service_vpc_cidr" {
@@ -57,6 +58,48 @@ variable "onprem_vpc_cidr" {
   description = "On-Prem Role VPC CIDR."
   type        = string
   default     = "172.16.0.0/16"
+}
+
+variable "create_onprem_network" {
+  description = "Whether to create the On-Prem Role VPC. Set false to reference an existing On-Prem VPC/subnets."
+  type        = bool
+  default     = true
+}
+
+variable "existing_onprem_vpc_id" {
+  description = "Existing On-Prem VPC ID when create_onprem_network=false."
+  type        = string
+  default     = ""
+}
+
+variable "existing_onprem_public_subnet_id" {
+  description = "Existing On-Prem public subnet ID when create_onprem_network=false."
+  type        = string
+  default     = ""
+}
+
+variable "existing_onprem_private_subnet_id" {
+  description = "Existing On-Prem private subnet ID when create_onprem_network=false."
+  type        = string
+  default     = ""
+}
+
+variable "existing_onprem_public_route_table_id" {
+  description = "Optional existing On-Prem public route table ID. When empty, it is discovered from the public subnet."
+  type        = string
+  default     = ""
+}
+
+variable "existing_onprem_private_route_table_id" {
+  description = "Optional existing On-Prem private route table ID. When empty, it is discovered from the private subnet."
+  type        = string
+  default     = ""
+}
+
+variable "existing_onprem_internet_gateway_id" {
+  description = "Optional existing On-Prem internet gateway ID when create_onprem_network=false."
+  type        = string
+  default     = ""
 }
 
 variable "onprem_public_subnet_cidr" {

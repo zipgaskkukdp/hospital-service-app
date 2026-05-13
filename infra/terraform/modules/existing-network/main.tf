@@ -25,6 +25,18 @@ data "aws_route_table" "service_to_onprem" {
   route_table_id = each.value
 }
 
+data "aws_route_table" "service_to_onprem_by_private_app_subnet" {
+  for_each  = length(var.service_route_table_ids_to_onprem) == 0 ? toset(var.service_private_app_subnet_ids) : toset([])
+  subnet_id = each.value
+}
+
+locals {
+  route_table_ids_to_onprem = distinct(concat(
+    var.service_route_table_ids_to_onprem,
+    [for route_table in data.aws_route_table.service_to_onprem_by_private_app_subnet : route_table.id]
+  ))
+}
+
 check "service_vpc_cidr" {
   assert {
     condition     = data.aws_vpc.service.cidr_block == var.expected_service_vpc_cidr

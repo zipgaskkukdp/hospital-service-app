@@ -7,36 +7,45 @@ aws_region  = "ap-northeast-2"
 project_name = "ai-care"
 environment = "dev"
 
-service_vpc_id = "vpc-xxxxxxxxxxxxxxxxx"
+service_vpc_id = "vpc-0beaaf51840498bae"
 
 service_public_subnet_ids = [
-  "subnet-public-a",
-  "subnet-public-c"
+  "subnet-0e4f74a9b41db30cd",
+  "subnet-01048c2306043944b"
 ]
 
 service_private_app_subnet_ids = [
-  "subnet-private-app-a",
-  "subnet-private-app-c"
+  "subnet-05a7f50d03159ee6f",
+  "subnet-0399d1d5dc9043b69"
 ]
 
 service_private_data_subnet_ids = [
-  "subnet-private-data-a",
-  "subnet-private-data-c"
+  "subnet-0dc3cda5512b495ea",
+  "subnet-0f38008ce44c44a11"
 ]
 
-service_route_table_ids_to_onprem = [
-  "rtb-private-app-a",
-  "rtb-private-app-c"
-]
+# Leave empty to auto-discover route tables from the private app subnets.
+service_route_table_ids_to_onprem = []
 
 onprem_availability_zone = "ap-northeast-2a"
-onprem_ec2_key_name      = ""
+create_onprem_network    = false
 
-reports_bucket_name = "ai-care-dev-reports-<aws-account-id>"
+existing_onprem_vpc_id            = "vpc-0a53924e1ccaeb2e2"
+existing_onprem_public_subnet_id  = "subnet-04b1cf699c6c52520"
+existing_onprem_private_subnet_id = "subnet-0652c89ea58554194"
+
+# Optional. Leave empty to auto-discover route tables from the On-Prem subnets.
+existing_onprem_public_route_table_id  = ""
+existing_onprem_private_route_table_id = ""
+existing_onprem_internet_gateway_id    = ""
+
+onprem_ec2_key_name = ""
+
+reports_bucket_name = "ai-care-dev-reports-105959916837"
 reports_s3_prefix   = "reports/"
 
 cluster_public_access_cidrs = [
-  "<your-public-ip>/32"
+  "121.134.211.97/32"
 ]
 
 app_ecr_repository_names = [

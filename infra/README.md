@@ -16,7 +16,9 @@ them.
 
 ## Created by Terraform
 
-- On-Prem Role VPC, public/private subnets, IGW, and route tables
+- On-Prem Role VPC, public/private subnets, IGW, and route tables when
+  `create_onprem_network=true`; the current dev example references the existing
+  On-Prem VPC/subnets with `create_onprem_network=false`
 - Security groups
 - strongSwan EC2 with EIP
 - FastAPI placeholder EC2
@@ -34,6 +36,7 @@ them.
 ## Not Created by Terraform
 
 - Existing Service VPC, subnets, route tables, or IGW
+- Existing On-Prem VPC/subnets when `create_onprem_network=false`
 - NAT Gateway
 - ALB
 - AWS Load Balancer Controller

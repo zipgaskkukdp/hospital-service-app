@@ -25,5 +25,5 @@ output "private_data_subnet_ids" {
 
 output "route_table_ids_to_onprem" {
   description = "Existing Service VPC route table IDs that receive On-Prem routes."
-  value       = var.service_route_table_ids_to_onprem
+  value       = local.route_table_ids_to_onprem
 }

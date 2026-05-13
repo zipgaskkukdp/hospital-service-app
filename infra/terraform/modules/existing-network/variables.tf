@@ -19,8 +19,9 @@ variable "service_private_data_subnet_ids" {
 }
 
 variable "service_route_table_ids_to_onprem" {
-  description = "Existing Service VPC route table IDs that should receive the route to On-Prem."
+  description = "Existing Service VPC route table IDs that should receive the route to On-Prem. When empty, route tables are discovered from private app subnets."
   type        = list(string)
+  default     = []
 }
 
 variable "expected_service_vpc_cidr" {

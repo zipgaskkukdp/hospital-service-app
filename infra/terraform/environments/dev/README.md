@@ -16,9 +16,11 @@ Required real values:
 - `service_public_subnet_ids`
 - `service_private_app_subnet_ids`
 - `service_private_data_subnet_ids`
-- `service_route_table_ids_to_onprem`
 - `reports_bucket_name`
 - `cluster_public_access_cidrs`
+
+`service_route_table_ids_to_onprem` can be left empty to discover route tables
+from `service_private_app_subnet_ids` at plan time.
 
 ## Commands
 
@@ -38,6 +40,8 @@ terraform apply tfplan
 - Region: `ap-northeast-2`
 - Project: `ai-care`
 - Environment: `dev`
+- This example references the existing On-Prem VPC/subnets with
+  `create_onprem_network=false`.
 - CI/CD: disabled by `enable_cicd=false`
 - AI processor Lambda: disabled by `create_ai_processor_lambda=false`
 - ECR default repositories exclude `board-service`; add it explicitly to

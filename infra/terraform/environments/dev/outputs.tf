@@ -70,6 +70,16 @@ output "rds_master_user_secret_arn" {
   sensitive   = true
 }
 
+output "nat_gateway" {
+  description = "NAT Gateway for private EKS node egress."
+  value = {
+    nat_gateway_id                = module.nat_gateway.nat_gateway_id
+    nat_gateway_public_ip         = module.nat_gateway.nat_gateway_public_ip
+    nat_gateway_eip_allocation_id = module.nat_gateway.nat_gateway_eip_allocation_id
+    private_route_table_ids       = module.nat_gateway.private_route_table_ids
+  }
+}
+
 output "eks" {
   description = "EKS outputs."
   value = {

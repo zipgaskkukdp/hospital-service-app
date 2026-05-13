@@ -48,6 +48,7 @@ The infra-only VPN route uses the private app route table for
 - Virtual Private Gateway, Customer Gateway, Site-to-Site VPN, and static routes
 - RDS PostgreSQL with AWS-managed master password
 - EKS cluster, managed node group, OIDC provider, and add-ons
+- NAT Gateway for private EKS worker node egress
 - ECR repositories
 - SQS triage queue and DLQ
 - S3 reports bucket and CloudFront distribution
@@ -59,7 +60,6 @@ The infra-only VPN route uses the private app route table for
 
 - Existing Service VPC, subnets, route tables, or IGW
 - Existing On-Prem VPC/subnets when `create_onprem_network=false`
-- NAT Gateway
 - ALB
 - AWS Load Balancer Controller
 - Backend Kubernetes deployments

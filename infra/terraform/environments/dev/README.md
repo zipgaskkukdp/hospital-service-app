@@ -58,6 +58,7 @@ terraform apply tfplan
   `create_onprem_network=false`.
 - CI/CD: disabled by `enable_cicd=false`
 - AI processor Lambda: disabled by `create_ai_processor_lambda=false`
+- NAT Gateway: enabled by `enable_nat_gateway=true`
 - ECR default repositories exclude `board-service`; add it explicitly to
   `app_ecr_repository_names` if needed later.
 

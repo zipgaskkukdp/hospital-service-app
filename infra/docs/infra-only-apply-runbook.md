@@ -15,6 +15,7 @@ questionnaire and hospital recommendation platform.
 - AWS Site-to-Site VPN resources and routes
 - RDS PostgreSQL
 - EKS cluster, managed node group, OIDC provider, and add-ons
+- NAT Gateway for private EKS worker node egress
 - ECR repositories
 - SQS triage queue and DLQ
 - S3 reports bucket
@@ -70,7 +71,7 @@ terraform apply tfplan
 - Existing Service VPC, subnets, IGW, and route tables are not created.
 - On-Prem VPC is created only when `create_onprem_network=true`; with the
   current dev example, existing On-Prem VPC/subnets are referenced instead.
-- NAT Gateway is not created.
+- NAT Gateway is created so private EKS nodes can reach ECR and AWS APIs.
 - ALB is not created.
 - Lambda function is not created when `create_ai_processor_lambda=false`.
 - CI/CD resources are not created when `enable_cicd=false`.
@@ -94,8 +95,7 @@ terraform apply tfplan
 - RDS Multi-AZ incurs cost.
 - EC2 instances incur cost.
 - Site-to-Site VPN incurs cost.
-- If a NAT Gateway already exists in the console, it may continue to incur cost,
-  but this Terraform code does not create one.
+- NAT Gateway incurs hourly and data processing cost.
 - CloudFront and S3 incur usage-based cost.
 
 ## H. Destroy Notes

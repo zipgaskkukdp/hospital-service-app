@@ -49,6 +49,9 @@ cluster_public_access_cidrs = [
   "121.134.211.97/32"
 ]
 
+enable_nat_gateway         = true
+nat_gateway_public_subnet_id = "subnet-0e4f74a9b41db30cd"
+
 app_ecr_repository_names = [
   "auth-user-service",
   "questionnaire-service",

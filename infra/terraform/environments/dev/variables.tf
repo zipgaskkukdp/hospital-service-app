@@ -198,6 +198,18 @@ variable "backend_container_port" {
   default     = 8080
 }
 
+variable "enable_nat_gateway" {
+  description = "Whether to create a NAT Gateway for private EKS worker node egress."
+  type        = bool
+  default     = true
+}
+
+variable "nat_gateway_public_subnet_id" {
+  description = "Optional public subnet ID for the NAT Gateway. When empty, the first existing public subnet is used."
+  type        = string
+  default     = ""
+}
+
 variable "customer_gateway_bgp_asn" {
   description = "Customer Gateway BGP ASN."
   type        = number

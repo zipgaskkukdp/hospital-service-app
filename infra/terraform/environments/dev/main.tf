@@ -77,6 +77,17 @@ module "security" {
   tags                    = local.common_tags
 }
 
+module "nat_gateway" {
+  source = "../../modules/nat-gateway"
+
+  project_name            = var.project_name
+  environment             = var.environment
+  enabled                 = var.enable_nat_gateway
+  public_subnet_id        = var.nat_gateway_public_subnet_id != "" ? var.nat_gateway_public_subnet_id : module.existing_network.public_subnet_ids[0]
+  private_route_table_ids = module.existing_network.route_table_ids_to_onprem
+  tags                    = local.common_tags
+}
+
 module "onprem_compute" {
   source = "../../modules/onprem-compute"
 
@@ -153,6 +164,8 @@ module "eks" {
   node_min_size                   = var.eks_node_min_size
   node_max_size                   = var.eks_node_max_size
   tags                            = local.common_tags
+
+  depends_on = [module.nat_gateway]
 }
 
 module "app_services" {

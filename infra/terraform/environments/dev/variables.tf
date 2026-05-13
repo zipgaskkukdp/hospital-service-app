@@ -42,8 +42,23 @@ variable "service_private_data_subnet_ids" {
   type        = list(string)
 }
 
-variable "service_route_table_ids_to_onprem" {
-  description = "Existing Service VPC route table IDs that should route to On-Prem. When empty, route tables are discovered from private app subnets."
+variable "service_internet_gateway_id" {
+  description = "Existing Service VPC Internet Gateway ID."
+  type        = string
+}
+
+variable "service_public_route_table_ids" {
+  description = "Existing Service public route table IDs. Public default routes to the Service IGW are console-managed."
+  type        = list(string)
+}
+
+variable "service_private_app_route_table_ids" {
+  description = "Existing Service private app route table IDs for the subnets where EKS worker nodes are actually placed. Current dev nodes use subnet-0399d1d5dc9043b69 and subnet-05a7f50d03159ee6f; use the route table associated with those subnets. Public or private data route table IDs here can cause EKS NodeCreationFailure."
+  type        = list(string)
+}
+
+variable "service_private_data_route_table_ids" {
+  description = "Existing Service private data route table IDs."
   type        = list(string)
   default     = []
 }
@@ -54,70 +69,40 @@ variable "expected_service_vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "onprem_vpc_cidr" {
-  description = "On-Prem Role VPC CIDR."
+variable "onprem_vpc_id" {
+  description = "Existing On-Prem VPC ID."
+  type        = string
+}
+
+variable "onprem_public_subnet_id" {
+  description = "Existing On-Prem public subnet ID."
+  type        = string
+}
+
+variable "onprem_private_subnet_id" {
+  description = "Existing On-Prem private subnet ID."
+  type        = string
+}
+
+variable "onprem_internet_gateway_id" {
+  description = "Existing On-Prem VPC Internet Gateway ID. Do not use the Service VPC IGW."
+  type        = string
+}
+
+variable "onprem_public_route_table_id" {
+  description = "Existing On-Prem public route table ID. Public default route to the On-Prem IGW is console-managed."
+  type        = string
+}
+
+variable "onprem_private_route_table_id" {
+  description = "Existing On-Prem private route table ID. Terraform adds the Service CIDR route to strongSwan ENI here."
+  type        = string
+}
+
+variable "expected_onprem_vpc_cidr" {
+  description = "Expected existing On-Prem VPC CIDR."
   type        = string
   default     = "172.16.0.0/16"
-}
-
-variable "create_onprem_network" {
-  description = "Whether to create the On-Prem Role VPC. Set false to reference an existing On-Prem VPC/subnets."
-  type        = bool
-  default     = true
-}
-
-variable "existing_onprem_vpc_id" {
-  description = "Existing On-Prem VPC ID when create_onprem_network=false."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_public_subnet_id" {
-  description = "Existing On-Prem public subnet ID when create_onprem_network=false."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_private_subnet_id" {
-  description = "Existing On-Prem private subnet ID when create_onprem_network=false."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_public_route_table_id" {
-  description = "Optional existing On-Prem public route table ID. When empty, it is discovered from the public subnet."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_private_route_table_id" {
-  description = "Optional existing On-Prem private route table ID. When empty, it is discovered from the private subnet."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_internet_gateway_id" {
-  description = "Optional existing On-Prem internet gateway ID when create_onprem_network=false."
-  type        = string
-  default     = ""
-}
-
-variable "onprem_public_subnet_cidr" {
-  description = "On-Prem public subnet CIDR."
-  type        = string
-  default     = "172.16.1.0/24"
-}
-
-variable "onprem_private_subnet_cidr" {
-  description = "On-Prem private subnet CIDR."
-  type        = string
-  default     = "172.16.10.0/24"
-}
-
-variable "onprem_availability_zone" {
-  description = "On-Prem subnet Availability Zone."
-  type        = string
-  default     = "ap-northeast-2a"
 }
 
 variable "strongswan_private_ip" {
@@ -198,16 +183,10 @@ variable "backend_container_port" {
   default     = 8080
 }
 
-variable "enable_nat_gateway" {
-  description = "Whether to create a NAT Gateway for private EKS worker node egress."
+variable "create_service_nat_gateway" {
+  description = "Whether to create a Service NAT Gateway for private EKS worker node egress."
   type        = bool
   default     = true
-}
-
-variable "nat_gateway_public_subnet_id" {
-  description = "Optional public subnet ID for the NAT Gateway. When empty, the first existing public subnet is used."
-  type        = string
-  default     = ""
 }
 
 variable "customer_gateway_bgp_asn" {
@@ -303,6 +282,12 @@ variable "eks_node_instance_types" {
   description = "EKS node instance types."
   type        = list(string)
   default     = ["t3.medium"]
+}
+
+variable "eks_node_disk_size" {
+  description = "EKS managed node group root volume size in GiB."
+  type        = number
+  default     = 20
 }
 
 variable "eks_node_desired_size" {

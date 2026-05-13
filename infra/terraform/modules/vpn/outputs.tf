@@ -34,8 +34,8 @@ output "vpn_connection_tunnel2_inside_cidr" {
 }
 
 output "service_to_onprem_route_table_ids" {
-  description = "Service VPC route table IDs with route to On-Prem."
-  value       = keys(aws_route.service_to_onprem)
+  description = "Service private app route table IDs with route to On-Prem."
+  value       = keys(aws_route.service_private_app_to_onprem)
 }
 
 output "onprem_to_service_route_table_id" {

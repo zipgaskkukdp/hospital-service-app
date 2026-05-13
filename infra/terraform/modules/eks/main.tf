@@ -92,35 +92,6 @@ resource "aws_iam_role_policy_attachment" "node_ecr_readonly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_launch_template" "node" {
-  name_prefix            = "${local.cluster_name}-node-"
-  update_default_version = true
-  vpc_security_group_ids = [var.eks_node_security_group_id]
-
-  metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
-  }
-
-  tag_specifications {
-    resource_type = "instance"
-    tags = merge(var.tags, {
-      Name = "${local.cluster_name}-node"
-    })
-  }
-
-  tag_specifications {
-    resource_type = "volume"
-    tags = merge(var.tags, {
-      Name = "${local.cluster_name}-node-volume"
-    })
-  }
-
-  tags = merge(var.tags, {
-    Name = "${local.cluster_name}-node-lt"
-  })
-}
-
 resource "aws_ec2_tag" "cluster_discovery" {
   for_each    = local.all_discovery_subnet_ids
   resource_id = each.value
@@ -150,12 +121,8 @@ resource "aws_eks_node_group" "this" {
   version         = var.cluster_version
   ami_type        = "AL2023_x86_64_STANDARD"
   capacity_type   = "ON_DEMAND"
+  disk_size       = var.node_disk_size
   instance_types  = var.node_instance_types
-
-  launch_template {
-    id      = aws_launch_template.node.id
-    version = "$Latest"
-  }
 
   scaling_config {
     desired_size = var.node_desired_size

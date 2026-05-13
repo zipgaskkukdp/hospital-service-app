@@ -6,16 +6,50 @@ Create AWS infrastructure with Terraform before deploying application workloads.
 This runbook covers the infra-only phase for the AI-based hybrid infant
 questionnaire and hospital recommendation platform.
 
-## B. Created by This Apply
+## B. Console-Managed Network Baseline
 
-- On-Prem Role VPC when `create_onprem_network=true`; the current dev example
-  references the existing On-Prem VPC/subnets with `create_onprem_network=false`
+VPC, subnet, Internet Gateway, and route table resources are created directly in
+the AWS Console and kept fixed. Terraform references these network resources
+through data sources.
+
+Console-managed network resources:
+
+- Service VPC
+- Service public subnets A/C
+- Service private app subnets A/C
+- Service private data subnets A/C
+- Service VPC Internet Gateway
+- Service public route tables
+- Service private app route tables
+- Service private data route tables
+- On-Prem VPC
+- On-Prem public subnet
+- On-Prem private subnet
+- On-Prem VPC Internet Gateway
+- On-Prem public route table
+- On-Prem private route table
+
+Routing baseline:
+
+- Service VPC IGW and On-Prem VPC IGW are different resources.
+- Service public route tables must have console-managed
+  `0.0.0.0/0 -> Service IGW`.
+- On-Prem public route table must have console-managed
+  `0.0.0.0/0 -> On-Prem IGW`.
+- Terraform adds `0.0.0.0/0 -> NAT Gateway` to Service private app route
+  tables for EKS worker node egress.
+- Terraform adds `172.16.0.0/16 -> VGW` to Service private app route tables.
+- Terraform adds `10.0.0.0/16 -> strongSwan ENI` to the On-Prem private route
+  table.
+
+## C. Created by This Apply
+
+- Service NAT Gateway and NAT EIP
 - Security groups
 - strongSwan, FastAPI placeholder, and On-Prem PostgreSQL placeholder EC2
 - AWS Site-to-Site VPN resources and routes
 - RDS PostgreSQL
 - EKS cluster, managed node group, OIDC provider, and add-ons
-- NAT Gateway for private EKS worker node egress
 - ECR repositories
 - SQS triage queue and DLQ
 - S3 reports bucket
@@ -23,27 +57,12 @@ questionnaire and hospital recommendation platform.
 - CloudWatch log groups
 - IAM roles and IRSA policy
 
-## Existing On-Prem Values in Dev
+## D. Not Created by This Apply
 
-- On-Prem VPC: `vpc-0a53924e1ccaeb2e2`
-- CIDR: `172.16.0.0/16`
-- Public subnet: `subnet-04b1cf699c6c52520`
-- Private subnet: `subnet-0652c89ea58554194`
-- Availability Zone: `ap-northeast-2a`
-- On-Prem route table: `rtb-038788093fe3a6b25`
-- On-Prem IGW: `igw-02cc153ccd9981c3f`
-
-Known Service VPC route tables:
-
-- Public route table: `rtb-0cf3c0a0cb31950de`
-- Private app route table: `rtb-0b57d3c7408c20c8d`
-
-The infra-only VPN route uses `rtb-0b57d3c7408c20c8d` for
-`172.16.0.0/16 -> VGW`. The On-Prem public/private subnets currently share
-`rtb-038788093fe3a6b25`.
-
-## C. Not Created by This Apply
-
+- Existing Service VPC, subnets, IGW, or route tables
+- Existing On-Prem VPC, subnets, IGW, or route tables
+- Service public default route to Service IGW
+- On-Prem public default route to On-Prem IGW
 - Backend deployment
 - Frontend deployment
 - Running onprem-api service
@@ -53,7 +72,7 @@ The infra-only VPN route uses `rtb-0b57d3c7408c20c8d` for
 - AWS Load Balancer Controller
 - CI/CD resources when `enable_cicd=false`
 
-## D. Execution Order
+## E. Execution Order
 
 ```bash
 cd infra/terraform/environments/dev
@@ -66,18 +85,22 @@ terraform plan -out=tfplan
 terraform apply tfplan
 ```
 
-## E. Check in the Plan
+## F. Check in the Plan
 
 - Existing Service VPC, subnets, IGW, and route tables are not created.
-- On-Prem VPC is created only when `create_onprem_network=true`; with the
-  current dev example, existing On-Prem VPC/subnets are referenced instead.
-- NAT Gateway is created so private EKS nodes can reach ECR and AWS APIs.
+- Existing On-Prem VPC, subnets, IGW, and route tables are not created.
+- Service NAT Gateway is created in the first Service public subnet.
+- Service private app route tables receive `0.0.0.0/0 -> NAT Gateway`.
+- Service private app route tables receive `172.16.0.0/16 -> VGW`.
+- On-Prem private route table receives `10.0.0.0/16 -> strongSwan ENI`.
+- Service public route tables are not changed.
+- On-Prem public route table is not given Service VPC IGW routes.
 - ALB is not created.
 - Lambda function is not created when `create_ai_processor_lambda=false`.
 - CI/CD resources are not created when `enable_cicd=false`.
 - Unwanted `board-service` ECR or app resources are not created.
 
-## F. Check After Apply
+## G. Check After Apply
 
 - EKS cluster exists.
 - Managed node group exists.
@@ -87,9 +110,102 @@ terraform apply tfplan
 - S3 bucket and CloudFront distribution exist.
 - Three On-Prem EC2 instances exist.
 - VPN Connection exists.
-- VPN tunnels may remain down until strongSwan is configured with real tunnel settings.
+- VPN tunnels may remain down until strongSwan is configured with real tunnel
+  settings.
 
-## G. Cost Notes
+## H. EKS NodeCreationFailure Checklist
+
+If the managed node group reaches `CREATE_FAILED` with
+`NodeCreationFailure: Instances failed to join the kubernetes cluster`, check:
+
+- Node IAM role has `AmazonEKSWorkerNodePolicy`, `AmazonEKS_CNI_Policy`, and
+  `AmazonEC2ContainerRegistryReadOnly`.
+- Service private app route table has `0.0.0.0/0 -> NAT Gateway`.
+- Service public route table has `0.0.0.0/0 -> Service IGW`.
+- EKS `endpointPrivateAccess=true`.
+- Launch template is not using only a custom node security group.
+- Node EC2 instances also have the EKS cluster security group attached.
+- Cluster security group and node security group allow required control
+  plane/node traffic, especially TCP 443 and TCP 10250.
+- The launch template does not set a custom AMI or custom user data unless the
+  bootstrap process is fully handled.
+- Service VPC DNS support and DNS hostnames are enabled, and DHCP options
+  provide working DNS such as `AmazonProvidedDNS`.
+
+Route table checks for the current dev worker subnets:
+
+```bash
+aws ec2 describe-route-tables \
+  --region ap-northeast-2 \
+  --filters "Name=association.subnet-id,Values=subnet-0399d1d5dc9043b69,subnet-05a7f50d03159ee6f"
+```
+
+If a worker subnet uses the VPC main route table instead of an explicit
+association, inspect all Service VPC route tables:
+
+```bash
+aws ec2 describe-route-tables \
+  --region ap-northeast-2 \
+  --filters "Name=vpc-id,Values=<service-vpc-id>"
+```
+
+Expected routes:
+
+- Service private app route table: `0.0.0.0/0 -> NAT Gateway`
+- Service private app route table: `172.16.0.0/16 -> VGW`
+- Service public route table: `0.0.0.0/0 -> Service IGW`
+
+Service VPC DNS checks:
+
+```bash
+aws ec2 describe-vpc-attribute \
+  --region ap-northeast-2 \
+  --vpc-id <service-vpc-id> \
+  --attribute enableDnsSupport
+
+aws ec2 describe-vpc-attribute \
+  --region ap-northeast-2 \
+  --vpc-id <service-vpc-id> \
+  --attribute enableDnsHostnames
+```
+
+Both values should be `true`.
+
+`aws-auth` check:
+
+```bash
+kubectl -n kube-system get configmap aws-auth -o yaml
+```
+
+Confirm the node role is present:
+
+```text
+arn:aws:iam::105959916837:role/ai-care-dev-eks-node-role
+```
+
+If the role is missing, managed node group access mapping may not have been
+applied. Check whether manual `aws-auth` mapping or the EKS access config path
+is needed before recreating the node group.
+
+Failed node bootstrap log check:
+
+```bash
+aws ec2 get-console-output \
+  --region ap-northeast-2 \
+  --instance-id <failed-node-instance-id> \
+  --latest
+```
+
+Search the output for:
+
+- `bootstrap`
+- `kubelet`
+- `timeout`
+- `Unauthorized`
+- `unable to resolve`
+- `x509`
+
+## I. Cost Notes
 
 - EKS cluster and worker nodes incur cost.
 - RDS Multi-AZ incurs cost.
@@ -98,10 +214,10 @@ terraform apply tfplan
 - NAT Gateway incurs hourly and data processing cost.
 - CloudFront and S3 incur usage-based cost.
 
-## H. Destroy Notes
+## J. Destroy Notes
 
 - `terraform destroy` removes only resources managed by this Terraform state.
-- Existing console-created Service VPC, subnets, IGW, and route tables are not
-  destroy targets.
+- Console-created Service and On-Prem VPC, subnets, IGWs, and route tables are
+  not destroy targets.
 - S3 bucket deletion can fail when objects remain in the bucket.
 - RDS uses `skip_final_snapshot=true` for dev.

@@ -23,8 +23,8 @@ variable "onprem_vpc_cidr_block" {
   type        = string
 }
 
-variable "service_route_table_ids_to_onprem" {
-  description = "Existing Service VPC route table IDs that should route to the VGW."
+variable "service_private_app_route_table_ids" {
+  description = "Existing Service private app route table IDs that should route On-Prem CIDR to the VGW."
   type        = list(string)
 }
 

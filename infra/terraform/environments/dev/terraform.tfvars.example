@@ -6,51 +6,73 @@
 aws_region  = "ap-northeast-2"
 project_name = "ai-care"
 environment = "dev"
+tags         = {}
 
-service_vpc_id = "vpc-0beaaf51840498bae"
+# Console-managed Service network.
+service_vpc_id = "vpc-service-xxxxxxxx"
 
 service_public_subnet_ids = [
-  "subnet-0e4f74a9b41db30cd",
-  "subnet-01048c2306043944b"
+  "subnet-service-public-a",
+  "subnet-service-public-c"
 ]
 
 service_private_app_subnet_ids = [
-  "subnet-05a7f50d03159ee6f",
-  "subnet-0399d1d5dc9043b69"
+  "subnet-service-private-app-a",
+  "subnet-service-private-app-c"
 ]
 
 service_private_data_subnet_ids = [
-  "subnet-0dc3cda5512b495ea",
-  "subnet-0f38008ce44c44a11"
+  "subnet-service-private-data-a",
+  "subnet-service-private-data-c"
 ]
 
-# Service private app route table that receives 172.16.0.0/16 -> VGW.
-service_route_table_ids_to_onprem = [
-  "rtb-0b57d3c7408c20c8d"
+service_internet_gateway_id = "igw-service-xxxxxxxx"
+
+service_public_route_table_ids = [
+  "rtb-service-public-a",
+  "rtb-service-public-c"
 ]
 
-onprem_availability_zone = "ap-northeast-2a"
-create_onprem_network    = false
+# Must be the route table associated with the EKS worker node subnets. Current
+# dev worker node subnets are subnet-0399d1d5dc9043b69 and
+# subnet-05a7f50d03159ee6f. Do not put public or private data route table IDs
+# here, or nodes may miss NAT egress and fail with NodeCreationFailure.
+service_private_app_route_table_ids = [
+  "rtb-service-private-app-a",
+  "rtb-service-private-app-c"
+]
 
-existing_onprem_vpc_id            = "vpc-0a53924e1ccaeb2e2"
-existing_onprem_public_subnet_id  = "subnet-04b1cf699c6c52520"
-existing_onprem_private_subnet_id = "subnet-0652c89ea58554194"
+service_private_data_route_table_ids = [
+  "rtb-service-private-data-a",
+  "rtb-service-private-data-c"
+]
 
-existing_onprem_public_route_table_id  = "rtb-038788093fe3a6b25"
-existing_onprem_private_route_table_id = "rtb-038788093fe3a6b25"
-existing_onprem_internet_gateway_id    = "igw-02cc153ccd9981c3f"
+# Console-managed On-Prem network. Do not use the Service VPC IGW here.
+onprem_vpc_id                 = "vpc-onprem-xxxxxxxx"
+onprem_public_subnet_id       = "subnet-onprem-public"
+onprem_private_subnet_id      = "subnet-onprem-private"
+onprem_internet_gateway_id    = "igw-onprem-xxxxxxxx"
+onprem_public_route_table_id  = "rtb-onprem-public"
+onprem_private_route_table_id = "rtb-onprem-private"
 
 onprem_ec2_key_name = ""
 
-reports_bucket_name = "ai-care-dev-reports-105959916837"
+# Console-managed routes:
+# - Service Public Route Table: 0.0.0.0/0 -> Service IGW
+# - On-Prem Public Route Table: 0.0.0.0/0 -> On-Prem IGW
+#
+# Terraform-managed routes:
+# - Service Private App Route Table: 0.0.0.0/0 -> Service NAT Gateway
+# - Service Private App Route Table: 172.16.0.0/16 -> VGW
+# - On-Prem Private Route Table: 10.0.0.0/16 -> strongSwan ENI
+create_service_nat_gateway = true
+
+reports_bucket_name = "ai-care-dev-reports-<account-id>"
 reports_s3_prefix   = "reports/"
 
 cluster_public_access_cidrs = [
-  "121.134.211.97/32"
+  "x.x.x.x/32"
 ]
-
-enable_nat_gateway         = true
-nat_gateway_public_subnet_id = "subnet-0e4f74a9b41db30cd"
 
 app_ecr_repository_names = [
   "auth-user-service",
@@ -63,8 +85,8 @@ app_ecr_repository_names = [
 create_ai_processor_lambda = false
 ai_processor_image_uri     = ""
 
-enable_cicd                = false
+enable_cicd                  = false
 create_github_oidc_provider = false
-github_oidc_provider_arn   = ""
-github_repository          = "zipgaskkukdp/hospital-service-app"
-github_branch              = "main"
+github_oidc_provider_arn    = ""
+github_repository           = "zipgaskkukdp/hospital-service-app"
+github_branch               = "main"

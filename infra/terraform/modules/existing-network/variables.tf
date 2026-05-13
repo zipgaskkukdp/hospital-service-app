@@ -18,8 +18,23 @@ variable "service_private_data_subnet_ids" {
   type        = list(string)
 }
 
-variable "service_route_table_ids_to_onprem" {
-  description = "Existing Service VPC route table IDs that should receive the route to On-Prem. When empty, route tables are discovered from private app subnets."
+variable "service_internet_gateway_id" {
+  description = "Existing Service VPC Internet Gateway ID. This must be attached to the Service VPC."
+  type        = string
+}
+
+variable "service_public_route_table_ids" {
+  description = "Existing Service public route table IDs. Their 0.0.0.0/0 -> Service IGW route is console-managed."
+  type        = list(string)
+}
+
+variable "service_private_app_route_table_ids" {
+  description = "Existing Service private app route table IDs for the subnets where EKS worker nodes are actually placed. Terraform adds NAT and VGW routes to these route tables."
+  type        = list(string)
+}
+
+variable "service_private_data_route_table_ids" {
+  description = "Existing Service private data route table IDs. Terraform does not add NAT or VPN routes to these by default."
   type        = list(string)
   default     = []
 }

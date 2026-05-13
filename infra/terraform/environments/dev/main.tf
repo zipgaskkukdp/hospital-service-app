@@ -30,35 +30,47 @@ locals {
   })
 }
 
+moved {
+  from = module.nat_gateway.aws_eip.nat[0]
+  to   = module.service_nat_gateway.aws_eip.nat[0]
+}
+
+moved {
+  from = module.nat_gateway.aws_nat_gateway.this[0]
+  to   = module.service_nat_gateway.aws_nat_gateway.this[0]
+}
+
+moved {
+  from = module.nat_gateway.aws_route.private_default_to_nat
+  to   = module.service_nat_gateway.aws_route.private_app_default_to_nat
+}
+
 module "existing_network" {
   source = "../../modules/existing-network"
 
-  service_vpc_id                    = var.service_vpc_id
-  service_public_subnet_ids         = var.service_public_subnet_ids
-  service_private_app_subnet_ids    = var.service_private_app_subnet_ids
-  service_private_data_subnet_ids   = var.service_private_data_subnet_ids
-  service_route_table_ids_to_onprem = var.service_route_table_ids_to_onprem
-  expected_service_vpc_cidr         = var.expected_service_vpc_cidr
-  tags                              = local.common_tags
+  service_vpc_id                       = var.service_vpc_id
+  service_public_subnet_ids            = var.service_public_subnet_ids
+  service_private_app_subnet_ids       = var.service_private_app_subnet_ids
+  service_private_data_subnet_ids      = var.service_private_data_subnet_ids
+  service_internet_gateway_id          = var.service_internet_gateway_id
+  service_public_route_table_ids       = var.service_public_route_table_ids
+  service_private_app_route_table_ids  = var.service_private_app_route_table_ids
+  service_private_data_route_table_ids = var.service_private_data_route_table_ids
+  expected_service_vpc_cidr            = var.expected_service_vpc_cidr
+  tags                                 = local.common_tags
 }
 
 module "onprem_network" {
   source = "../../modules/onprem-network"
 
-  project_name                           = var.project_name
-  environment                            = var.environment
-  create_onprem_network                  = var.create_onprem_network
-  existing_onprem_vpc_id                 = var.existing_onprem_vpc_id
-  existing_onprem_public_subnet_id       = var.existing_onprem_public_subnet_id
-  existing_onprem_private_subnet_id      = var.existing_onprem_private_subnet_id
-  existing_onprem_public_route_table_id  = var.existing_onprem_public_route_table_id
-  existing_onprem_private_route_table_id = var.existing_onprem_private_route_table_id
-  existing_onprem_internet_gateway_id    = var.existing_onprem_internet_gateway_id
-  onprem_vpc_cidr                        = var.onprem_vpc_cidr
-  onprem_public_subnet_cidr              = var.onprem_public_subnet_cidr
-  onprem_private_subnet_cidr             = var.onprem_private_subnet_cidr
-  onprem_availability_zone               = var.onprem_availability_zone
-  tags                                   = local.common_tags
+  onprem_vpc_id                 = var.onprem_vpc_id
+  onprem_public_subnet_id       = var.onprem_public_subnet_id
+  onprem_private_subnet_id      = var.onprem_private_subnet_id
+  onprem_internet_gateway_id    = var.onprem_internet_gateway_id
+  onprem_public_route_table_id  = var.onprem_public_route_table_id
+  onprem_private_route_table_id = var.onprem_private_route_table_id
+  expected_onprem_vpc_cidr      = var.expected_onprem_vpc_cidr
+  tags                          = local.common_tags
 }
 
 module "security" {
@@ -77,15 +89,15 @@ module "security" {
   tags                    = local.common_tags
 }
 
-module "nat_gateway" {
-  source = "../../modules/nat-gateway"
+module "service_nat_gateway" {
+  source = "../../modules/service-nat-gateway"
 
-  project_name            = var.project_name
-  environment             = var.environment
-  enabled                 = var.enable_nat_gateway
-  public_subnet_id        = var.nat_gateway_public_subnet_id != "" ? var.nat_gateway_public_subnet_id : module.existing_network.public_subnet_ids[0]
-  private_route_table_ids = module.existing_network.route_table_ids_to_onprem
-  tags                    = local.common_tags
+  project_name                        = var.project_name
+  environment                         = var.environment
+  service_public_subnet_id_for_nat    = module.existing_network.public_subnet_ids[0]
+  service_private_app_route_table_ids = module.existing_network.private_app_route_table_ids
+  create_service_nat_gateway          = var.create_service_nat_gateway
+  tags                                = local.common_tags
 }
 
 module "onprem_compute" {
@@ -114,17 +126,17 @@ module "onprem_compute" {
 module "vpn" {
   source = "../../modules/vpn"
 
-  project_name                      = var.project_name
-  environment                       = var.environment
-  service_vpc_id                    = module.existing_network.service_vpc_id
-  service_vpc_cidr_block            = module.existing_network.service_vpc_cidr_block
-  onprem_vpc_cidr_block             = module.onprem_network.onprem_vpc_cidr_block
-  service_route_table_ids_to_onprem = module.existing_network.route_table_ids_to_onprem
-  onprem_private_route_table_id     = module.onprem_network.onprem_private_route_table_id
-  strongswan_public_ip              = module.onprem_compute.strongswan_public_ip
-  strongswan_network_interface_id   = module.onprem_compute.strongswan_network_interface_id
-  customer_gateway_bgp_asn          = var.customer_gateway_bgp_asn
-  tags                              = local.common_tags
+  project_name                        = var.project_name
+  environment                         = var.environment
+  service_vpc_id                      = module.existing_network.service_vpc_id
+  service_vpc_cidr_block              = module.existing_network.service_vpc_cidr_block
+  onprem_vpc_cidr_block               = module.onprem_network.onprem_vpc_cidr_block
+  service_private_app_route_table_ids = module.existing_network.private_app_route_table_ids
+  onprem_private_route_table_id       = module.onprem_network.onprem_private_route_table_id
+  strongswan_public_ip                = module.onprem_compute.strongswan_public_ip
+  strongswan_network_interface_id     = module.onprem_compute.strongswan_network_interface_id
+  customer_gateway_bgp_asn            = var.customer_gateway_bgp_asn
+  tags                                = local.common_tags
 }
 
 module "rds" {
@@ -160,12 +172,26 @@ module "eks" {
   cluster_endpoint_private_access = var.cluster_endpoint_private_access
   cluster_public_access_cidrs     = var.cluster_public_access_cidrs
   node_instance_types             = var.eks_node_instance_types
+  node_disk_size                  = var.eks_node_disk_size
   node_desired_size               = var.eks_node_desired_size
   node_min_size                   = var.eks_node_min_size
   node_max_size                   = var.eks_node_max_size
   tags                            = local.common_tags
 
-  depends_on = [module.nat_gateway]
+  depends_on = [
+    module.service_nat_gateway
+  ]
+}
+
+resource "aws_vpc_security_group_ingress_rule" "rds_from_eks_cluster" {
+  security_group_id            = module.security.rds_security_group_id
+  referenced_security_group_id = module.eks.eks_cluster_security_group_id
+  from_port                    = var.postgres_port
+  to_port                      = var.postgres_port
+  ip_protocol                  = "tcp"
+  description                  = "PostgreSQL from EKS managed node group cluster security group."
+
+  tags = local.common_tags
 }
 
 module "app_services" {

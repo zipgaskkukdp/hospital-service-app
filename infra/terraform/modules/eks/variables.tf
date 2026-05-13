@@ -52,6 +52,12 @@ variable "node_instance_types" {
   default     = ["t3.medium"]
 }
 
+variable "node_disk_size" {
+  description = "Managed node group root volume size in GiB. Managed directly by aws_eks_node_group because no custom launch template is used."
+  type        = number
+  default     = 20
+}
+
 variable "node_desired_size" {
   description = "Desired node group size."
   type        = number

@@ -1,77 +1,41 @@
-variable "project_name" {
-  description = "Project name used in resource names."
+variable "onprem_vpc_id" {
+  description = "Existing On-Prem VPC ID."
   type        = string
 }
 
-variable "environment" {
-  description = "Deployment environment name."
+variable "onprem_public_subnet_id" {
+  description = "Existing On-Prem public subnet ID for strongSwan."
   type        = string
 }
 
-variable "onprem_vpc_cidr" {
-  description = "CIDR block for the On-Prem Role VPC."
+variable "onprem_private_subnet_id" {
+  description = "Existing On-Prem private subnet ID for placeholder services."
   type        = string
 }
 
-variable "create_onprem_network" {
-  description = "Whether to create the On-Prem Role VPC. Set false to reference an existing On-Prem VPC/subnets."
-  type        = bool
-  default     = true
-}
-
-variable "existing_onprem_vpc_id" {
-  description = "Existing On-Prem VPC ID when create_onprem_network=false."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_public_subnet_id" {
-  description = "Existing On-Prem public subnet ID when create_onprem_network=false."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_private_subnet_id" {
-  description = "Existing On-Prem private subnet ID when create_onprem_network=false."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_public_route_table_id" {
-  description = "Optional existing On-Prem public route table ID. When empty, it is discovered from the public subnet."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_private_route_table_id" {
-  description = "Optional existing On-Prem private route table ID. When empty, it is discovered from the private subnet."
-  type        = string
-  default     = ""
-}
-
-variable "existing_onprem_internet_gateway_id" {
-  description = "Optional existing On-Prem internet gateway ID when create_onprem_network=false."
-  type        = string
-  default     = ""
-}
-
-variable "onprem_public_subnet_cidr" {
-  description = "CIDR block for the On-Prem public subnet."
+variable "onprem_internet_gateway_id" {
+  description = "Existing On-Prem VPC Internet Gateway ID. Do not use the Service VPC IGW here."
   type        = string
 }
 
-variable "onprem_private_subnet_cidr" {
-  description = "CIDR block for the On-Prem private subnet."
+variable "onprem_public_route_table_id" {
+  description = "Existing On-Prem public route table ID. Its 0.0.0.0/0 -> On-Prem IGW route is console-managed."
   type        = string
 }
 
-variable "onprem_availability_zone" {
-  description = "Availability Zone for the On-Prem Role VPC subnets."
+variable "onprem_private_route_table_id" {
+  description = "Existing On-Prem private route table ID. Terraform adds the Service CIDR route to strongSwan ENI here."
   type        = string
+}
+
+variable "expected_onprem_vpc_cidr" {
+  description = "Expected CIDR block for the existing On-Prem VPC."
+  type        = string
+  default     = "172.16.0.0/16"
 }
 
 variable "tags" {
-  description = "Common tags."
+  description = "Common tags. This module only reads existing network resources."
   type        = map(string)
   default     = {}
 }

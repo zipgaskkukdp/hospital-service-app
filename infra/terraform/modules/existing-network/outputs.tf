@@ -23,7 +23,22 @@ output "private_data_subnet_ids" {
   value       = var.service_private_data_subnet_ids
 }
 
-output "route_table_ids_to_onprem" {
-  description = "Existing Service VPC route table IDs that receive On-Prem routes."
-  value       = local.route_table_ids_to_onprem
+output "service_internet_gateway_id" {
+  description = "Existing Service VPC Internet Gateway ID."
+  value       = data.aws_internet_gateway.service.id
+}
+
+output "public_route_table_ids" {
+  description = "Existing Service public route table IDs."
+  value       = var.service_public_route_table_ids
+}
+
+output "private_app_route_table_ids" {
+  description = "Existing Service private app route table IDs."
+  value       = var.service_private_app_route_table_ids
+}
+
+output "private_data_route_table_ids" {
+  description = "Existing Service private data route table IDs."
+  value       = var.service_private_data_route_table_ids
 }

@@ -38,10 +38,12 @@ resource "aws_vpn_connection_route" "onprem" {
   destination_cidr_block = var.onprem_vpc_cidr_block
 }
 
-# If an existing Service route table already has this destination, AWS returns
-# a duplicate route error. Import or remove the existing route before apply.
-resource "aws_route" "service_to_onprem" {
-  for_each               = toset(var.service_route_table_ids_to_onprem)
+# Service public route tables do not receive VPN routes. Only Service private
+# app route tables get 172.16.0.0/16 -> VGW. If a route table already has this
+# destination, AWS returns a duplicate route error; import or remove the route
+# before apply.
+resource "aws_route" "service_private_app_to_onprem" {
+  for_each               = toset(var.service_private_app_route_table_ids)
   route_table_id         = each.value
   destination_cidr_block = var.onprem_vpc_cidr_block
   gateway_id             = aws_vpn_gateway.this.id

@@ -11,6 +11,7 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: rootpassword
     volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
       - local_pg_data:/var/lib/postgresql/data
 
   # 🛡️ 1. Auth & User Service

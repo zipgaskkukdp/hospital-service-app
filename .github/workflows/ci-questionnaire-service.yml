@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'apps/questionnaire-service/**' # ⭐ Board Service 코드가 바뀔 때만 실행!
+      - 'apps/questionnaire-service/**' # ⭐ Questionnaire Service 코드가 바뀔 때만 실행!
 
 env:
   AWS_REGION: ap-northeast-2
@@ -22,10 +22,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+# Node.js / TypeScript / React Native Lint 검사 (Placeholder)
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+    - name: Run Lint (TS/RN) Placeholder
+      run: echo "Run Lint here - 프론트/백엔드 팀이 TypeScript(ESLint) 세팅 후 명령어 수정 예정"
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::<AWS_ACCOUNT_ID>:role/github-actions-ecr-role # 🚨 나중에 인프라 담당자에게 받아서 채울 부분
+        role-to-assume: arn:aws:iam::105959916837:role/github-actions-ecr-role # 🚨 나중에 인프라 담당자에게 받아서 채울 부분
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
@@ -37,7 +45,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        cd apps/board-service
+        cd apps/questionnaire-service
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         # ... (기존 docker push 단계) ...
@@ -54,7 +62,7 @@ jobs:
       run: |
         cd manifests/overlays/dev/questionnaire-service
         # Kustomize를 이용해 deployment.yaml의 이미지 주소를 새 버전으로 덮어씁니다.
-        kustomize edit set image <AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/questionnaire-service:latest=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        kustomize edit set image 105959916837.dkr.ecr.ap-northeast-2.amazonaws.com/questionnaire-service:latest=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     # 3. 변경된 K8s 설정 파일을 Git에 자동 커밋 & 푸시
     - name: Commit and push changes

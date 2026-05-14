@@ -92,6 +92,7 @@ export interface AiResult {
 export interface BoardPost {
   id: string;
   userId: string;
+  authorNickname: string | null;
   title: string;
   content: string;
   viewCount: number;

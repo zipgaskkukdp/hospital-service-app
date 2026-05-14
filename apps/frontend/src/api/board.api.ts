@@ -3,6 +3,7 @@ import { apiRequest } from "./client";
 export interface BoardPost {
   id: string;
   userId: string;
+  authorNickname: string | null;
   title: string;
   content: string;
   viewCount: number;

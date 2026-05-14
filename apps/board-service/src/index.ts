@@ -34,6 +34,7 @@ function toPost(row: BoardPostRow): BoardPost {
   return {
     id: row.id,
     userId: row.user_id,
+    authorNickname: row.author_nickname ?? null,
     title: row.title,
     content: row.content,
     viewCount: row.view_count,
@@ -90,28 +91,40 @@ app.post("/api/board/posts", authMiddleware, asyncHandler(async (req, res) => {
   const input = postSchema.parse(req.body);
   const id = crypto.randomUUID();
   const rows = await prisma.$queryRaw<BoardPostRow[]>`
-    INSERT INTO board_posts (id, user_id, title, content)
-    VALUES (${id}::uuid, ${userId}::uuid, ${input.title}, ${input.content})
-    RETURNING *
+    WITH inserted AS (
+      INSERT INTO board_posts (id, user_id, title, content)
+      VALUES (${id}::uuid, ${userId}::uuid, ${input.title}, ${input.content})
+      RETURNING *
+    )
+    SELECT inserted.*, users.nickname AS author_nickname
+    FROM inserted
+    JOIN users ON users.id = inserted.user_id
   `;
   res.status(201).json({ post: toPost(rows[0]) });
 }));
 
 app.get("/api/board/posts", asyncHandler(async (_req, res) => {
   const rows = await prisma.$queryRaw<BoardPostRow[]>`
-    SELECT * FROM board_posts
-    WHERE deleted_at IS NULL
-    ORDER BY created_at DESC
+    SELECT board_posts.*, users.nickname AS author_nickname
+    FROM board_posts
+    JOIN users ON users.id = board_posts.user_id
+    WHERE board_posts.deleted_at IS NULL
+    ORDER BY board_posts.created_at DESC
   `;
   res.json({ posts: rows.map(toPost) });
 }));
 
 app.get("/api/board/posts/:id", asyncHandler(async (req, res) => {
   const rows = await prisma.$queryRaw<BoardPostRow[]>`
-    UPDATE board_posts
-    SET view_count = view_count + 1
-    WHERE id = ${req.params.id}::uuid AND deleted_at IS NULL
-    RETURNING *
+    WITH updated AS (
+      UPDATE board_posts
+      SET view_count = view_count + 1
+      WHERE id = ${req.params.id}::uuid AND deleted_at IS NULL
+      RETURNING *
+    )
+    SELECT updated.*, users.nickname AS author_nickname
+    FROM updated
+    JOIN users ON users.id = updated.user_id
   `;
   const post = rows[0];
   if (!post) {
@@ -146,12 +159,17 @@ app.patch("/api/board/posts/:id", authMiddleware, asyncHandler(async (req, res) 
   }
 
   const rows = await prisma.$queryRaw<BoardPostRow[]>`
-    UPDATE board_posts
-    SET title = ${input.title ?? current.title},
-        content = ${input.content ?? current.content},
-        updated_at = NOW()
-    WHERE id = ${req.params.id}::uuid
-    RETURNING *
+    WITH updated AS (
+      UPDATE board_posts
+      SET title = ${input.title ?? current.title},
+          content = ${input.content ?? current.content},
+          updated_at = NOW()
+      WHERE id = ${req.params.id}::uuid
+      RETURNING *
+    )
+    SELECT updated.*, users.nickname AS author_nickname
+    FROM updated
+    JOIN users ON users.id = updated.user_id
   `;
   res.json({ post: toPost(rows[0]) });
 }));

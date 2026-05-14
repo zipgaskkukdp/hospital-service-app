@@ -1,4 +1,5 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { logout } from "../api/auth.api";
 import { cn } from "../utils/className";
 
 const navItems = [
@@ -9,6 +10,8 @@ const navItems = [
 ];
 
 export function Navbar() {
+  const navigate = useNavigate();
+
   return (
     <header className="sticky top-0 z-40 border-b border-slate-100 bg-[#F6FAFE]/95 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -51,6 +54,16 @@ export function Navbar() {
           >
             내 정보
           </NavLink>
+          <button
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#2563EB] hover:text-[#2563EB]"
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
+            type="button"
+          >
+            로그아웃
+          </button>
         </div>
       </div>
       <nav className="flex gap-2 overflow-x-auto border-t border-slate-100 px-4 py-2 text-sm md:hidden">

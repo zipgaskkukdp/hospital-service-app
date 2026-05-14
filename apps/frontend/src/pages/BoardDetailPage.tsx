@@ -74,13 +74,13 @@ export function BoardDetailPage() {
           <p className="text-sm font-semibold text-[#2563EB]">커뮤니티 게시판</p>
           <h1 className="mt-3 text-3xl font-bold">{post.title}</h1>
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500">
-            <span>작성자 익명</span>
+            <span>작성자 {post.authorNickname ?? "알 수 없음"}</span>
             <span>조회 {post.viewCount}</span>
-            <span>작성 {formatDateTime(post.createdAt)}</span>
-            <span>수정 {formatDateTime(post.updatedAt)}</span>
+            <span className="whitespace-nowrap">작성 {formatDateTime(post.createdAt)}</span>
+            <span className="whitespace-nowrap">수정 {formatDateTime(post.updatedAt)}</span>
           </div>
         </div>
-        <p className="whitespace-pre-wrap text-base leading-8 text-slate-700">{post.content}</p>
+        <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{post.content}</p>
         <div className="grid gap-3 sm:grid-cols-2">
           {images.map((image) => (
             <div key={image.id} className="border border-slate-200 bg-slate-50 p-3 text-sm" style={{ borderRadius: 8 }}>

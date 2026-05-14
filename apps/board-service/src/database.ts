@@ -5,6 +5,7 @@ export const prisma = new PrismaClient();
 export interface BoardPostRow {
   id: string;
   user_id: string;
+  author_nickname?: string | null;
   title: string;
   content: string;
   view_count: number;

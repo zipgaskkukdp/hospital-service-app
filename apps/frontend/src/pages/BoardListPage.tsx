@@ -106,7 +106,7 @@ export function BoardListPage() {
       )}
       {error && !writing && <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       <Card className="overflow-hidden">
-        <div className="grid grid-cols-[80px_1fr_110px_110px_120px] bg-[#F1F5F9] px-6 py-4 text-sm font-semibold text-slate-600 max-lg:grid-cols-[72px_1fr_92px_110px] max-sm:hidden">
+        <div className="grid grid-cols-[80px_1fr_130px_100px_150px] bg-[#F1F5F9] px-6 py-4 text-sm font-semibold text-slate-600 max-lg:grid-cols-[72px_1fr_120px_140px] max-sm:hidden">
           <span>번호</span>
           <span>제목</span>
           <span className="text-center">작성자</span>
@@ -114,12 +114,12 @@ export function BoardListPage() {
           <span className="text-center">작성일</span>
         </div>
         <div className="divide-y divide-slate-200">
-          <div className="grid grid-cols-[80px_1fr_110px_110px_120px] items-center px-6 py-6 text-sm max-lg:grid-cols-[72px_1fr_92px_110px] max-sm:block">
+          <div className="grid grid-cols-[80px_1fr_130px_100px_150px] items-center px-6 py-6 text-sm max-lg:grid-cols-[72px_1fr_120px_140px] max-sm:block">
             <span className="inline-flex rounded-full bg-red-50 px-2 py-1 text-xs font-bold text-red-700">공지</span>
             <h2 className="font-bold text-slate-950 max-sm:mt-3">Aicloud 커뮤니티 이용 가이드라인 안내</h2>
             <span className="text-center text-slate-600 max-sm:mt-2 max-sm:block max-sm:text-left">관리자</span>
             <span className="text-center text-slate-600 max-lg:hidden">-</span>
-            <span className="text-center text-slate-600 max-sm:mt-1 max-sm:block max-sm:text-left">2024.05.20</span>
+            <span className="whitespace-nowrap text-center text-slate-600 max-sm:mt-1 max-sm:block max-sm:text-left">2024.05.20</span>
           </div>
           {loading && <p className="px-6 py-10 text-sm text-slate-500">게시글을 불러오는 중입니다.</p>}
           {!loading && filteredPosts.length === 0 && (
@@ -130,18 +130,20 @@ export function BoardListPage() {
           {!loading &&
             filteredPosts.map((post, index) => (
               <Link
-                className="grid grid-cols-[80px_1fr_110px_110px_120px] items-center px-6 py-6 transition hover:bg-white max-lg:grid-cols-[72px_1fr_92px_110px] max-sm:block"
+                className="grid grid-cols-[80px_1fr_130px_100px_150px] items-center px-6 py-5 transition hover:bg-white max-lg:grid-cols-[72px_1fr_120px_140px] max-sm:block"
                 key={post.id}
                 to={`/board/${post.id}`}
               >
                 <span className="text-slate-500">{posts.length - index}</span>
                 <div className="min-w-0 max-sm:mt-2">
                   <h3 className="truncate text-base font-semibold text-slate-950">{post.title}</h3>
-                  <p className="mt-1 line-clamp-1 text-sm text-slate-500">{post.content}</p>
+                  <p className="mt-1 hidden text-xs text-slate-500 max-sm:block">
+                    {post.authorNickname ?? "알 수 없음"} · 조회 {post.viewCount} · {formatDate(post.createdAt)}
+                  </p>
                 </div>
-                <span className="text-center text-slate-600 max-sm:mt-2 max-sm:block max-sm:text-left">익명</span>
+                <span className="text-center text-slate-600 max-sm:hidden">{post.authorNickname ?? "알 수 없음"}</span>
                 <span className="text-center text-slate-600 max-lg:hidden">{post.viewCount}</span>
-                <span className="text-center text-slate-600 max-sm:mt-1 max-sm:block max-sm:text-left">{formatDate(post.createdAt)}</span>
+                <span className="whitespace-nowrap text-center text-slate-600 max-sm:hidden">{formatDate(post.createdAt)}</span>
               </Link>
             ))}
         </div>

@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/사용자계정/Howmuch.git'
+    repoURL: 'https://github.com/zipgaskkukdp/hospital-service-app.git'
     targetRevision: main
     path: manifests/overlays/dev/questionnaire-service # 👈 경로 확인!
   destination:

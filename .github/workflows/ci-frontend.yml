@@ -1,14 +1,14 @@
-name: CI - ai-triage-service
+name: CI - Frontend Service
 
 on:
   push:
     branches: [ "main" ]
     paths:
-      - 'apps/ai-triage-service/**' # ⭐ Ai Triage Service 코드가 바뀔 때만 실행!
+      - 'apps/frontend/**' # ⭐ Frontend 코드가 바뀔 때만 실행되도록 설정!
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: ai-triage-service
+  ECR_REPOSITORY: frontend # 🚨 ECR 레포지토리 이름 (인프라와 동일해야 함)
 
 # OIDC 토큰 발급을 위한 권한 설정 (필수)
 permissions:
@@ -22,7 +22,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-# Node.js / TypeScript / React Native Lint 검사 (Placeholder)
+    # Node.js / TypeScript / React Native Lint 검사 (Placeholder)
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -33,7 +33,7 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::105959916837:role/github-actions-ecr-role # 🚨 나중에 인프라 담당자에게 받아서 채울 부분
+        role-to-assume: arn:aws:iam::105959916837:role/github-actions-ecr-role 
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
@@ -45,10 +45,9 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        cd apps/ai-triage-service
+        cd apps/frontend # 🚨 폴더 이동: frontend 폴더로 정확히 이동
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        # ... (기존 docker push 단계) ...
 
     # 1. Kustomize 설치
     - name: Setup Kustomize
@@ -60,15 +59,15 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        cd manifests/overlays/dev/ai-triage-service
+        cd manifests/overlays/dev/frontend # 🚨 매니페스트 경로: frontend 폴더로 이동
         # Kustomize를 이용해 deployment.yaml의 이미지 주소를 새 버전으로 덮어씁니다.
-        kustomize edit set image 105959916837.dkr.ecr.ap-northeast-2.amazonaws.com/ai-triage-service:latest=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        kustomize edit set image 105959916837.dkr.ecr.ap-northeast-2.amazonaws.com/frontend:latest=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     # 3. 변경된 K8s 설정 파일을 Git에 자동 커밋 & 푸시
     - name: Commit and push changes
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add manifests/overlays/dev/ai-triage-service/kustomization.yaml
-        git commit -m "chore: update ai-triage-service image tag to ${{ github.sha }}"
+        git add manifests/overlays/dev/frontend/kustomization.yaml
+        git commit -m "chore: update frontend image tag to ${{ github.sha }}"
         git push
